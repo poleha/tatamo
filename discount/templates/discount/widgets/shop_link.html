@@ -1,0 +1,11 @@
+	{% if shop.site %}
+					{% if shop.show_link %}
+                       <p class="site" data-icon="&#xe08d;">
+						<a href="{{ shop.get_link }}">{{ shop.site }}</a>
+					</p>
+                        {% else %}
+                        <p class="site" data-icon="&#xe08d;">
+						{{ shop.site }}
+					</p>
+                    {% endif %}
+					{% endif %}

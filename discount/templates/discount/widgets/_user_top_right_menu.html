@@ -1,0 +1,5 @@
+{% load discount_tags %}
+{% for item in menu_list %}
+<a href="{{ item.href }}" class="add-shop {{ item.cls }}">{{ item.title }}</a>
+
+{% endfor %}

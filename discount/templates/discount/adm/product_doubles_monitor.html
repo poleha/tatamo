@@ -1,0 +1,17 @@
+{% extends 'discount/base/base.html' %}
+
+
+{% block content %}
+
+    {% for doubles in doubles_list  %}
+    <ol>
+        {% for product in doubles %}
+
+        <li>
+        <a href="{{ product.get_absolute_url }}">{{ product }} - *{{ product.status_text }}* - {{ product.link }}</a>
+        </li>
+     {% endfor %}
+    </ol>
+    {% endfor %}
+
+{% endblock content %}

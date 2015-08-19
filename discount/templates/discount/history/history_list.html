@@ -1,0 +1,12 @@
+{% extends 'discount/base/base.html' %}
+
+{% block content %}
+
+
+{% for hist in history %}
+    {{ hist.created }}
+    {{ hist.history_type }}
+    {{ hist.title }}
+    {{ hist.product }}
+    {% endfor %}
+{% endblock content %}

@@ -1,0 +1,207 @@
+{% extends 'discount/base/base.html' %}
+{% load discount_tags %}
+{% block content %}
+    {% if status_text %}
+    <label>Статус:</label>
+    {{ status_text }}
+    {% endif %}
+{{ form.non_field_errors }}
+    <form enctype="multipart/form-data" action="{{ action_url }}" method="post" class="shop-create-form form" id="shop-create-form">
+{% csrf_token %}
+{{ form.media }}
+
+
+  	<div class="item">
+    {{ form.title.label_tag }}
+		<div class="field inline-b  wrapper">
+			{{ form.title.errors }}
+    {{ form.title }}
+
+		</div>
+	</div>
+
+
+	<div class="item">
+    {{ form.image.label_tag }}
+		<div class="field inline-b  wrapper">
+            <div class="prompt">Изображение размером 300x300 точек.</div>
+			{{ form.image.errors }}
+    <div class="added-img">{{ form.image }}</div>
+	
+		</div>
+	</div>
+
+
+          <div class="inline-b-t"><div class="comment">Пожалуйста, укажите, какие бренды необходимо добавить магазину, в форме "Добавление брендов", перечислив их через запятую. <br />
+			   Они станут доступны после обработки менеджером Tatamo.</div></div>
+        <div class="item">
+    {{ form.add_brands.label_tag }}
+		<div class="field inline-b  wrapper">
+			{{ form.add_brands.errors }}
+      {{ form.add_brands }}
+
+		</div>
+	</div>
+
+
+
+
+   {% if form.instance.pk %}
+        <div class="brands item">
+   <label>Доступные бренды:</label>
+	   <div class="inline-b-t">
+
+     {% for brand in brands %}
+	  <div class="brand-item">{{ brand }}</div>
+{% endfor %}
+ {% if brands_count == 0 %}
+     <div class="errorlist">Для магазина не доступно ни одного бренда.</div>
+ {% endif %}
+		   </div>
+
+</div>
+    {% endif %}
+
+   	<div class="item">
+    {{ form.site.label_tag }}
+		<div class="field inline-b  wrapper">
+			{{ form.site.errors }}
+     {{ form.site }}
+	
+		</div>
+	</div>
+
+
+     	<div class="item">
+    {{ form.body.label_tag }}
+		<div class="field inline-b  wrapper">
+			{{ form.body.errors }}
+    {{ form.body }}
+
+		</div>
+	</div>
+
+
+   	<div class="item">
+    {{ form.work_time.label_tag }}
+		<div class="field inline-b  wrapper">
+			{{ form.work_time.errors }}
+     {{ form.work_time }}
+	
+		</div>
+	</div>
+
+       	<div class="item">
+    {{ form.city.label_tag }}
+		<div class="field inline-b  wrapper">
+			{{ form.city.errors }}
+    {{ form.city }}
+	
+		</div>
+	</div>
+
+       	<div class="item">
+    {{ form.custom_adress.label_tag }}
+		<div class="field inline-b  wrapper">
+			{{ form.custom_adress.errors }}
+     {{ form.custom_adress }}
+	
+		</div>
+	</div>
+
+
+
+
+
+    {{ phone_formset.management_form }}
+    {{ phone_formset.non_form_errors }}
+    {% for form in phone_formset %}
+    <p>
+    {{ form.phone.label_tag }}
+    {{ form.phone.errors }}
+    {{ form.phone }}
+    {% comment %}
+    {{ form.DELETE|label_with_classes:'phone-delete-label' }}
+    {{ form.DELETE.errors }}
+    {{ form.DELETE }}
+    {% endcomment %}
+    {{ form.id }}
+    {{ form.shop }}
+    </p>
+    {% endfor %}
+
+<div class="{{ user_formset_cls }}">
+<div class="inline-b-t">
+<div class="comment">
+Пожалуйста, перечислите здесь пользователей, у которых будут права на изменение данных о магазине и размещение акций от имени магазина.
+Себя указывать не обязательно, Вы будете добавлены автоматически.
+</div></div>
+{{ user_formset.management_form }}
+    {{ user_formset.non_form_errors }}
+    {% for form in user_formset %}
+    <p>
+    {{ form.user.label_tag }}
+    {{ form.user.errors }}
+    {{ form.user|field_with_classes:'user-field' }}
+    {{ form.id }}
+    {{ form.shop }}
+    {{ form.confirmed }}
+    </p>
+    {% endfor %}
+</div>
+
+
+        <div class="inline-b-t">
+<div class="comment">
+Комментарий будет виден только Вам и менеджеру Татамо.
+</div></div>
+    <div class="item">
+    {{ form.shop_comment.label_tag }}
+
+
+		<div class="field inline-b  wrapper">
+			{{ form.shop_comment.errors }}
+      {{ form.shop_comment }}
+
+		</div>
+	</div>
+
+    <div class="item">
+    {{ form.tatamo_comment.label_tag }}
+		<div class="field inline-b  wrapper">
+			{{ form.tatamo_comment.errors }}
+      {{ form.tatamo_comment }}
+
+		</div>
+	</div>
+
+
+<input type="hidden" name="submit-type">
+
+        {{ form.hashed }}
+{% if show_save_button %}
+<input type="submit" class="to-save inline-b" name="to-save" value="Сохранить">
+{% endif %}
+    {% if show_submit_button %}
+    <input type="submit" class="to-approve inline-b" name="to-approve" id="to-approve" value="Отправить на согласование">
+{% endif %}
+</form>
+
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+   <script>
+
+  $(function() {
+    var availableTags = [
+        {% for login in logins %}
+            "{{ login }}",
+        {% endfor %}
+
+    ];
+    $( ".user-field" ).autocomplete({
+      source: availableTags
+    });
+  });
+  </script>
+
+
+{% endblock content %}

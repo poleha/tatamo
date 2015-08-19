@@ -1,0 +1,38 @@
+{% extends 'discount/base/base.html' %}
+{% load discount_tags %}
+
+{% block content %}
+<form method="GET">
+    {{ form }}
+<input type="submit" name="submit">
+</form>
+    <table>
+    <tr>
+
+        <th>Акция</th><th>Всего посещений</th><th>Посещений незарегистрированными пользователями</th><th>Посещений зарегистрированными пользователями</th>
+        <th>Всего посетителей</th><th>Гостей</th><th>Пользователей</th><th>Корзин</th><th>Мгновенных корзин</th><th>Подписок</th>
+
+
+
+    </tr>
+    {% for product in products %}
+
+        <tr>
+    <td><a href="{{ product.get_absolute_url }}">{{ product }}</a></td>
+<td>{% get_product_stats_for_period 'all_visits' %}</td>
+<td>{% get_product_stats_for_period 'guest_visits' %}</td>
+<td>{% get_product_stats_for_period 'user_visits' %}</td>
+<td>{% get_product_stats_for_period 'all_unique_visits' %}</td>
+<td>{% get_product_stats_for_period 'guest_unique_visits' %}</td>
+<td>{% get_product_stats_for_period 'user_unique_visits' %}</td>
+<td>{% get_product_stats_for_period 'carts' %}</td>
+<td>{% get_product_stats_for_period 'instant_carts' %}</td>
+<td>{% get_product_stats_for_period 'subscriptions' %}</td>
+
+</tr>
+
+{% endfor %}
+</table>
+
+                    {% include 'discount/general/_pager.html' %}
+{% endblock content %}

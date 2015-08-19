@@ -1,0 +1,67 @@
+<div class="container">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="row">
+				<div class="wrapper">
+
+					<div class="col">
+						<h2>Информация</h2>
+						<ul>
+							<li><a href="{{ menu_items.contacts.href }}">{{ menu_items.contacts.title }}</a>
+							</li>
+							{% if menu_items.shop_offer %}
+							<li><a href="{{ menu_items.shop_offer.href }}">{{ menu_items.shop_offer.title }}</a>
+							</li>
+							{% endif %}
+							<li><a href="{{ menu_items.help.href }}">{{ menu_items.help.title }}</a>
+							</li>
+                        <li><a href="{{ menu_items.instructions.href }}">{{ menu_items.instructions.title }}</a>
+							</li>
+						</ul>
+					</div>
+
+					<div class="col col-2">
+						<h2>Акции</h2>
+						<ul>
+                            {% for product_type_item in product_types %}
+							<li> <a href="{{ product_type_item.href }}">{{ product_type_item.title }}</a>
+							</li>
+
+							</li>
+                            {% endfor %}
+						</ul>
+					</div>
+
+
+					
+					<div class="col col-3">
+						<h2>Личный кабинет</h2>
+						<ul class="col-inner">
+							<li><a href="{{ menu_items.favourite.href }}">{{ menu_items.favourite.title }}</a>
+							</li>
+							<li> <a href="{{ menu_items.login.href }}">{{ menu_items.login.title }}</a>
+							</li>
+							<li> <a href="{{ menu_items.personal.href }}">{{ menu_items.personal.title }}</a>
+							</li>
+
+
+						</ul>
+						<ul class="col-inner">
+							{% if menu_items.shop_create %}
+							<li> <a href="{{ menu_items.shop_create.href }}">{{ menu_items.shop_create.title }}</a>
+							</li>
+							{% endif %} {% for menu in user_menu_items %}
+							<li class="{{ menu.cls }}">
+								<a href="{{ menu.href }}" {% if menu.link_class %} class="{{ menu.link_class }}" {% endif %}>{{ menu.title }}</a>
+							</li>
+							{% endfor %}
+
+						</ul>
+					</div>
+					
+
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

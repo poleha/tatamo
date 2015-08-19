@@ -1,0 +1,13 @@
+<div class="container"><div class="row">
+        <div class="menu col-md-12">
+            <ul>
+				
+                {% for menu in full_menu_list %}
+                <li class="{{ menu.cls }}">
+                    <a href="{{ menu.href }}">{{ menu.title }}</a>
+                </li>
+                {% endfor %}
+				
+            </ul>
+        </div>
+</div></div>

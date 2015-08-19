@@ -1,0 +1,404 @@
+{% extends 'discount/base/base.html' %}
+{% load discount_tags %}
+{% load cache %}
+
+{% block content %}
+  {% cache 2419200 product_detail_1 product.pk %}
+    <div id="product-details" class="row">
+        <div class="col-md-10">
+			<div class="product item row">
+				<div class="col-md-4 col-sm-5 col-xs-4 image-wrapper">
+                    {% include "discount/product/_product_detail_slider.html" %}
+                </div>
+
+                <div class="col-md-8 col-sm-7 col-xs-8 product-content">
+
+                    <div class="row head">
+                        <div class="col-md-9 ">
+							
+							<div class="name inline-b">
+								{{ product }}
+							</div>
+
+
+
+							<div class="percent inline-b">{{ product.percent }}% скидка</div>
+							<div class="brand">
+								{{ product.brand }}
+							</div>
+
+                        </div>
+
+                        <div class="col-md-3 shop right-al">
+                            <a href = "{{ product.shop.get_absolute_url }}">{{ product.shop.title }}</a>
+                        </div>
+                    </div>
+					<hr class="bold"></hr>
+
+                    <div class="body clearfix">
+                        
+						<div class="prices inline-b">
+                            <span class="price normal-price">
+                                {{ product.normal_price }}руб
+                            </span>
+                            <span class="price stock-price">
+								{{ product.stock_price }}руб
+                            </span>
+                        </div>
+                        
+                        <div class="dates inline-b right">
+							<span class="date inline-b" data-icon="&#xe081;">
+
+                                до<span class="hilighted"> {{ product.end_date }}
+
+                                </span></span>
+							<span class="date inline-b" data-icon="&#xe018;">
+
+                                <span class="hilighted">
+                                       {% endcache %}
+                            {% get_days_left product %}
+
+                              {% cache 2419200 product_detail_2 product.pk %}
+                                </span></span>
+
+                        </div>  
+                    </div>
+
+                    <div class="row about">
+                        <div class="col-md-12">
+                            
+							<div class="descript">
+                            
+                            <div class="item">
+
+
+                                <div class="text">
+                                    {{ product.body|linebreaks }}
+                                </div>
+
+                                {% if product.compound %}
+                                <span class="label">Состав:</span>
+
+                                <div class="list inline-b"> {{ product.compound }}</div>   
+                            {% endif %}
+                            </div>
+
+                                  {% if product.link %}
+
+
+                                <div class="list inline-b shop"> <a href="{{ product.get_link }}">Ссылка на страницу товара на сайте магазина</a></div>
+                               {% endif %}
+
+                      {% include 'discount/product/_product_filter_params.html' %}
+
+
+{% comment %}
+                            <div class="item">
+                                <span class="label">Размеры:</span>
+                                <div class="list inline-b"><ul class="sizes">
+                                    {% for dress_size in product.dress_sizes.all %}
+                                    <li class="size">
+                                        {{ dress_size }}
+                                    </li>
+                                    {% endfor %}
+                                    </ul>
+                                </div> 
+                            </div>
+                         {% endcomment %}
+
+							</div>
+{% endcache %}
+                            {% if user.is_simple_user %}
+                            {% ptc_add_form product%}
+                            {% ptc_subscribe_form product%}
+                            {% product_coupon_status product%}
+                            {% endif %}
+                             {% if manage_url %}
+
+							<div class="white"><a class="button" href="{{ manage_url }}">Редактировать</a></div>
+                            {% if product.status in changer_statuses %}
+
+							<div class="white"><a class="button" href="{% url 'discount:product-change' product.pk %}">Создать заявку на изменение</a></div>
+                            {% if changer.status_text %}
+                                <div class="request-status"><label>Текущий статус заявки: </label>{{ changer.status_text }}</div>
+                               {% endif %}
+                            {% endif %}
+
+                                      {% if shop_tatamo_manager_approve %}
+                            {% product_tatamo_manager_approve product %}
+                            {% endif %}
+
+                             {% if product.status in approved_statuses %}
+
+                              <div class="to-start-now">
+                              <form method="post" action="{% url 'discount:product-start' product.pk %}">
+                                  {% csrf_token %}
+								  <input type="submit" value="Стартовать акцию немедленно">
+                              </form>
+                              {% if product.to_pay_in_day  %}
+                                  <div id="to-pay-warning">Со счета будет списано {{ product.to_pay_in_day }} за размещение на главной странице!</div>
+                               {% endif %}
+                              </div>
+
+
+                             {% endif %}
+
+                             {% if product.status in active_statuses and product.to_pay_tomorrow %}
+							<div class="to-pay-warning">
+                              <label>К оплате завтра:</label> {{ product.to_pay_tomorrow }}
+                              </div>
+
+
+                             {% endif %}
+
+
+                        {% endif %}
+
+
+                        </div>
+                    </div>
+
+
+                </div>
+               
+
+
+
+
+            </div> 
+
+            <div class="row">
+               
+               
+				<div class="col-md-12">
+					{% comment %}
+					{% for image in product.images.all %}
+					<div>
+						<a href="{{ product.get_absolute_url }}"><img src="/media/{{ image.image }}"></a>
+					</div>
+					{% endfor %}
+					{% endcomment %}
+
+						{% if manage_url %}
+				{% include 'discount/product/_product_detail_help.html' %}
+
+
+
+                    {% include 'discount/product/_product_actions_brief.html' %}
+
+           				<div class="admin-info">
+					<ul>
+						<li>Заблокировано средств <span>{{ product.points_blocked }}</span></li>
+						<li>Израсходовано средств <span>{{ product.points_spent }}</span></li>
+					</ul>
+
+						<form method="post" action="{% url 'discount:recreate-product-payments' product.pk %}">
+							{% csrf_token %}
+							<input type="submit" value="Пересчитать заблокированные средства">
+						</form>
+
+					</div>
+
+                            	{% if users_subscribed %}
+						<div class="subscribed" id="subscribed-block">
+                                    На акцию подписано {{ users_subscribed }} пользователей <button class="subscribed-button" id="subscribed-button">Посмотреть</button>
+					</div>
+							{% endif %}
+
+							{% if carts_count %}
+                                <div class="subscribed" id="cart-block">
+						Акция в корзине {{ carts_count }} пользователей <button class="subscribed-button" id="cart-button">Посмотреть</button>
+					</div>
+							{% endif %}
+
+                     		{% if bought_count %}
+						<div class="subscribed" id="bought-block">
+                                Товар по акции приобрели {{ bought_count }} пользователей <button class="subscribed-button" id="bought-button">Посмотреть</button>
+					</div>
+							{% endif %}
+
+
+                          	{% if user.is_tatamo_manager %}
+						<table>
+                        <tr>
+        <th>Всего посещений</th><th>Посещений незарегистрированными пользователями</th><th>Посещений зарегистрированными пользователями</th>
+        <th>Всего посетителей</th><th>Гостей</th><th>Пользователей</th>
+    </tr>
+                            <tr>
+                                <td>{{ product.stat_all_in_period.count }}</td>
+                                <td>{{ product.stat_guests_in_period.count }}</td>
+                                <td>{{ product.stat_users_in_period.count }}</td>
+                                <td>{{ product.stat_unique_all_in_period.count }}</td>
+                                <td>{{ product.stat_unique_guests_in_period.count }}</td>
+                                <td>{{ product.stat_unique_users_in_period.count }}</td>
+
+                        </tr>
+                        </table>
+							{% endif %}
+
+
+					{% product_payments product %}
+
+
+
+                        {% endif %}
+
+
+				</div>
+               
+               
+                <div class="col-md-12"><div id="comments-block">
+
+					<div class="title"><h1> Комментарии <span>({{ comments.count }})</span></h1> <hr></hr> </div>
+                    {% if comment_form %}
+                    <div class="full-comment-block">
+                    <input type="button" value="+ Прокомментировать" id="comment-button">
+
+					<div id="comment-block" class="clearfix">
+						<form id="comment-form" method="post" class="clearfix hidden">
+                            {% csrf_token %}
+                            {{ comment_form.as_p }}
+                            <input type="submit" value="Отправить комментарий">
+                        </form>
+                    </div>
+                   </div>
+                {% else %}
+					<div class="guest-comment"><div class="wrapper"  data-icon="">Для того, чтобы оставлять комментарии, необходимо <a href="{% url 'discount:full-login' %}">войти под учетной записью</a> или <a href="{% url 'discount:signup' %}">зарегистрироваться</a></div></div>
+                {% endif %}
+                   
+
+                   
+                    {% for comment in comments %}
+                    <div class="comment">
+                        <span class="user">{{ comment.name }}</span>
+                        <span class="date">{{ comment.created }}</span>
+                        <p class="comment-body">{{ comment.body }}</p>
+                    </div>
+                    {% endfor %}
+                    </div>
+                  
+                    
+
+                    {% if comments.count > 0 %}
+                    {% include 'discount/general/_pager.html' %}
+                    {% endif %}
+
+
+                </div> </div>
+
+<ul class="conditions">
+{% for condition in product.product_conditions %}
+<li>
+	<span>{{ condition }}</span>
+</li>
+
+{% endfor %}
+</ul>
+
+        </div>
+
+
+        <script>
+           $(function() {
+            $('#comment-button').click(function(){
+                var frm = $('#comment-form');
+                frm.toggleClass('hidden');
+            });
+
+
+        $('.subscribed-button').click(function(e){
+            var id = this.id;
+            if (id == 'subscribed-button'){
+              var url = '{% url 'discount:subscribed_to_product' product.pk %}';
+              var target = $('#subscribed-block');
+            }
+            else if (id == 'cart-button'){
+             var url = '{% url 'discount:cart_to_product' product.pk %}';
+              var target = $('#cart-block');
+            }
+
+             else if (id == 'bought-button'){
+             var url = '{% url 'discount:bought_to_product' product.pk %}';
+              var target = $('#bought-block');
+            }
+
+                $.ajax({
+                    type: 'POST',//$(frm).attr('method'),
+                    url: url,
+                    //data: url_data,
+                    success: function (data) {
+                    target.html(data);
+                    },
+                    error: function (data) {
+
+                    }
+                });
+
+        });
+
+               {% if save_product_stat %}
+
+        $.ajax({
+                    type: 'POST',//$(frm).attr('method'),
+                    url: '{%  url 'discount:product-stat-save' product.pk %}',
+                    //data: url_data,
+                    success: function (data) {
+                    },
+                    error: function (data) {
+                    }
+                });
+
+               {% endif %}
+
+           });
+        </script>
+
+        {% endblock content %}
+
+        {% block sidebar_right %}
+        <div id="sidebar-right" class="col-md-2">
+
+            {% shop_info %}
+
+
+{% cache 60 * 30 related_products product.pk %}
+{% with related_products=product.available_related_products  %}
+{% if related_products.count > 0 %}
+               <div class="shop-products">
+	<div class="title"><h4><a href="{{ shop_url }} ">Связанные акции:</a></h4></div>
+<div class="products-list clearfix">
+{% for related_product in product.related_products.all %}
+<div class="item">
+	<a href='{{ related_product.related_product.get_absolute_url }}'><img src="{{ related_product.related_product.get_main_image.thumb120 }}"><div class="name">{{ related_product.related_product }}</div></a>
+</div>
+{% endfor %}
+</div>
+</div>
+{% endif %}
+{% endwith %}
+{% endcache %}
+
+
+
+{% shop_products %}
+<div class="shop-products">
+<div class="title"><h4>Поделиться в соцсетях</h4></div>
+<script type="text/javascript" src="//yastatic.net/share/share.js" charset="utf-8"></script><div class="yashare-auto-init" data-yashareL10n="ru" data-yashareType="small" data-yashareQuickServices="vkontakte,facebook,twitter,odnoklassniki,moimir,gplus" data-yashareTheme="counter" data-yashareTitle="{{ product }}" data-yashareLink="{% get_site_url %}{{ product.get_absolute_url }}" data-yashareDescription="Магазины и производители дарят только посетителям tatamo.ru уникальные промо-коды на скидку. Проект стартовал 1 августа, так что предложений будет все больше и больше." data-yashareImage="{% get_site_url %}{{ product.get_main_image.thumb300 }}"></div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+        </div></div>
+{% endblock %}
+
+
+
+

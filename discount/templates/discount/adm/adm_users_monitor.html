@@ -1,0 +1,21 @@
+{% extends 'discount/base/base.html' %}
+
+{% block content %}
+<table>
+<tr><th>User</th><th>Email</th><th>Phone</th><th>Name</th><th>Shop</th><th>Joined</th></tr>
+    {% for user in users %}
+    <tr>
+    <td>{{ user }}</td>
+    <td>{{ user.email }}</td>
+    <td>{{ user.profile.phone }}</td>
+    <td>{{ user.first_name }}</td>
+    <td>
+    {% for shop in user.get_confirmed_shops %}
+        <a href="{{ shop.get_absolute_url }}">{{ shop }}  *{{ shop.status_text }}*</a>
+     {% endfor %}
+    </td>
+    <td>{{ user.date_joined }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock content %}

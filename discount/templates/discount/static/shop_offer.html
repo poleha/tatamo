@@ -1,0 +1,366 @@
+
+{% extends 'discount/base/base_full_screen.html' %}
+{% load discount_tags %}
+{% load contact_form_tags %}
+{% load staticfiles %}
+
+
+{% block content %}
+
+<div id="shop-offer">
+
+			<div class="header">
+				<div class="container">
+					<div class="row">
+						<div class="col-md-12">
+							<a href="http://tatamo.ru"><div class="logo"></div></a>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="banner">
+				<div class="abs bg-abs"><div class="wrapper bg-wrapper"><div class="abs bg"></div></div></div>
+				<div class="container">
+					<div class="row">
+						<div class="col-md-12">
+							<div class="text">
+								<div class="row-1"><span class="f18">В последнее время наблюдается резкий</span> <span class="f24">спад продаж</span><span class="f18"> во многих сферах.</span></div>
+								<div class="row-2"><span class="f24">В результате возникает вопрос -</span> <span class="f30">как с этим бороться?</span></div>
+								<div class="row-3"><span class="f48 upp">TATAMO</span><span class="f36">позволяет</span></div>
+								<div class="row-4 inline-b"><span class="upp f40">Увеличить продажи</span><span class="f24">  в кратчайшие сроки</span></div>
+							</div>
+						</div><span class="f18">
+					</div>
+				</div>
+
+			</div>
+
+			<div class="brand-info block">
+				<div class="container">
+					<div class="row">
+						<div class="col-md-12">
+							<div class="row-1">
+								Доллар вырос, <span class="f14">цены выросли</span>, а зарплаты не изменились,
+								все это повлияло на покупательную активность населения.  <br />
+								И, как показывают наши исследования, многие стараются
+								<span class="f18">купить товар со скидкой.</span>
+							</div>
+						</div>
+					</div>
+					<div class="row row-2">
+						<div class="col-md-3 col-sm-4">
+							<div class="col-1">
+								<a href="http://tatamo.ru"><div class="logo"></div></a>
+							</div>
+						</div>
+						<div class="col-md-9 col-sm-8">
+							<div class="col-2">
+								На  сайте TATAMO размещены предложения
+								от различных магазинов со скидкой, предложения уникальные
+								и нигде больше не дублируются.  <br />
+								<span class="f12"> TATAMO поможет Вам <span class="f14"> увеличить продажи <br /></span> и рассказать
+								о себе потенциальным клиентам. </span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="how block">
+				<div class="container">
+					<div class="row">
+						<div class="col-md-12">
+							<div class="block-inner border">
+								<div class="title"><h1>Как мы работаем</h1></div>
+								<div class="items">
+									<div class="row">
+										<div class="col-md-3 col-sm-4 item item-1">
+											<div class="img"><img src="{% static "discount/images/shop-offer/1.jpg" %}" alt=""></div>
+											<div class="desc-title">1. Вы добавляете товар со скидкой</div>
+											<div class="desc">Размер скидки и параметры товара	Вы определяете сами.</div>
+										</div>
+										<div class="col-md-1 dots">
+										.............
+										</div>
+										<div class="col-md-3 col-sm-4 item item-2">
+											<div class="img"><img src="{% static "discount/images/shop-offer/2.jpg" %}" alt=""></div>
+											<div class="desc-title">2. Мы размещаем информацию о товаре</div>
+											<div class="desc">А также информацию о продавце - название сайта, контакты.
+											</div>
+										</div>
+										<div class="col-md-1 dots">
+										.............
+										</div>
+										<div class="col-md-3 col-sm-4 item item-3">
+											<div class="img"><img src="{% static "discount/images/shop-offer/3.jpg" %}" alt=""></div>
+											<div class="desc-title">3. Более 500 000 человек видит ваш товар</div>
+											<div class="desc">Результат - резкое увеличение количества покупателей.</div>
+										</div>
+									</div>
+									<div class="result">тысячи потенциальных клиентов узнают о вашем  предложении</div>
+
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="advert block">
+				<div class="container">
+					<div class="row">
+							<div class="col-md-12">
+								<div class="block-inner wrapper">
+									<div class="title"><h1>Мы используем различные виды рекламы:</h1></div>
+									<div class="items">
+
+										<div class="row">
+											<div class="col-md-4 col-xs-6 item item-1">
+												<div class="icon" data-icon="&#xe08a;"></div>
+												<div class="desc-title">SMM. Продвижение в социальных сетях</div>
+												<hr></hr>
+												<div class="desc">Мы используем для рекламы основные социальные сети (Facebook, Vkontakte, Twitter, Instagram,  Одноклассники и другие). В день от 500 000 человек видят информацию о TATAMO.
+
+</div>
+											</div>
+
+										<div class="col-md-4 col-xs-6 item item-2">
+												<div class="icon" data-icon="&#xe09b;"></div>
+												<div class="desc-title">Знаменитости</div>
+												<hr></hr>
+												<div class="desc">Для рекламы TATAMO мы будем привлекать известных людей, которые в различных источниках расскажут о нас (в социальных сетях, в журналах и многих других).
+												</div>
+											</div>
+
+									<div class="col-md-4 col-xs-6 item item-3">
+												<div class="icon icon-metro" data-icon="&#xe060;"></div>
+												<div class="desc-title">Метро</div>
+												<hr></hr>
+												<div class="desc">Реклама TATAMO будет в метрополитене. При входе в метро каждый пассажир будет буквально упираться в нашу рекламу.</div>
+											</div>
+
+
+
+											<div class="col-md-4 col-xs-6 item item-4">
+												<div class="icon" data-icon="&#xe060;"></div>
+												<div class="desc-title">Блоги</div>
+												<hr></hr>
+											<div class="desc">Популярные блогеры на своих страницах	расскажут об уникальной возможности получать товар со скидой с помощью TATAMO.
+											</div>
+										</div>
+
+						<div class="col-md-4 col-xs-6 item item-5">
+											<div class="icon" data-icon="&#xe037;"></div>
+											<div class="desc-title">Тематические сайты</div>
+											<hr></hr>
+											<div class="desc">На тематических сайтах будут размещены около 30 баннеров о сайте ТATAMO
+											</div>
+										</div>
+
+					<div class="col-md-4 col-xs-6 item item-5">
+											<div class="icon" data-icon="&#xe09e;"></div>
+											<div class="desc-title">Таргетированная реклама</div>
+											<hr></hr>
+											<div class="desc">
+                                                <div>- Мы максимально эффективно настраиваем контекстную рекламу;</div>
+<div>- У нас свои горячие таргетированные базы для e-mail, sms, viber и what’s up рассылок.</div>
+                                            </div>
+										</div>
+
+				</div>
+
+
+									</div>
+									<div class="results wrapper"><div class="border">
+									<div class="title"><h1>В результате</h1></div>
+									<div class="block-inner">посещаемость Вашего сайта увеличится <br />
+										<span class="f8">потенциальные клиенты будут видеть не только предложения по акции, но и весь ассортимент. </span>
+										<span class="f12">Что позволит увеличить продажи.</span>
+									</div>
+								</div></div>
+
+								</div>
+							</div>
+						</div>
+				</div>
+			</div>
+
+			<div class="instr block">
+
+				<div class="container">
+					<div class="row">
+						<div class="col-md-12">
+							<div class="block-inner">
+
+								<h1>Инструкция по размещению Вашего предложения на сайте TATAMO</h1>
+
+								<div class="items">
+									<div class="row">
+										<div class="col-md-2 col-xs-12 item item-1">
+											{% if user.is_authenticated %}<div class="done">{% endif %}
+											<div class="item-inner">
+											<div class="num">1.</div>
+											<div class="desc"><a href="{% url 'discount:signup' %}">Зарегистрироваться на сайте</a></div>
+											</div>
+											{% if user.is_authenticated %}</div>{% endif %}
+										</div>
+										<div class="col-md-2 col-xs-12 item item-1">
+											{% if user.get_all_shops.count > 0 %}<div class="done">{% endif %}
+											<div class="item-inner">
+												<div class="num">2.</div>
+												<div class="desc"><a href="{% url 'discount:shop-create' %}">Зарегистрировать магазин</a></div>
+											</div>
+											{% if user.get_all_shops.count > 0 %}</div>{% endif %}
+										</div>
+										<div class="col-md-2 col-xs-12 item item-1">
+											{% if has_shop_on_approve %}<div class="done">{% endif %}
+											<div class="item-inner">
+												<div class="num">3.</div>
+												<div class="desc"><a href="{% url 'discount:shop-create' %}#to-approve">Отправить зарегистрированный магазин на проверку модератором TATAMO</a></div>
+											</div>
+											{% if has_shop_on_approve %}</div>{% endif %}
+										</div>
+										<div class="col-md-2 col-xs-12 item item-1">
+											{% if shop %}<div class="done">{% endif %}
+											<div class="item-inner">
+												<div class="num">4.</div>
+												<div class="desc">Дождаться проверки информации о магазине модератором TATAMO</div>
+											</div>
+											{% if shop %}</div>{% endif %}
+										</div>
+										<div class="col-md-2 col-xs-12 item item-1">
+											{% if has_products %}<div class="done">{% endif %}
+											<div class="item-inner">
+												<div class="num">5.</div>
+												<div class="desc"><a href="{% url 'discount:product-create' %}">Добавить одну или несколько акций</a></div>
+											</div>
+											{% if has_products %}</div>{% endif %}
+										</div>
+										<div class="col-md-2 col-xs-12 item item-1">
+											{% if has_approved_products %}<div class="done">{% endif %}
+											<div class="item-inner">
+												<div class="num">6.</div>
+												<div class="desc">Дождаться проверки информации об акциях модератором TATAMO</div>
+											</div>
+											{% if has_approved_products %}</div>{% endif %}
+										</div>
+
+								    </div>
+
+							</div>
+
+							<div class="result"><span class="num">7.</span>Получить новых клиентов!</div>
+
+
+			</div></div></div></div>
+
+		</div>
+
+			<div class="gift block">
+				<div class="container">
+					<div class="row">
+						<div class="col-md-12">
+							<div class="results wrapper"><div class="border">
+								<div class="gift-icon" data-icon="&#xe02f;"></div>
+								<div class="block-inner">
+									<div class="row-1"><span class="bordered">Только сейчас</span> у Вас есть возможность получить</div>
+									<span class="f20">15 дней бесплатного размещения!</span>
+								</div>
+							</div></div>
+						</div>
+					</div>
+				</div>
+ 			</div>
+
+			<div class="prices block">
+				<div class="container">
+					<div class="row">
+						<div class="col-md-12">
+							<div class="title"><h1>Оплата</h1></div>
+							<div class="subtitle"> Мы не продаем Ваш товар, мы расскажем потенциальным клиентам о Вашем предложении,
+								а также о Вашем магазине. </div>
+
+							<table>
+								<tr>
+									<th>Срок размещения</th>
+									<th>Базовое размещение</th>
+									<th>Размещение на главной странице в разделе "Категории"</th>
+									<th>Размещение в разделе “Спецразмещение”</th>
+								</tr>
+								<tr>
+									<td>1 день</td>
+									<td>от 15 руб.</td>
+									<td>500 руб.</td>
+									<td>800 руб.</td>
+								</tr>
+							</table>
+
+
+
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="col-md-12">
+							<div class="special wrapper"><div class="border">
+								<div class="block-inner">
+									<div class="row-1">Каждый месяц у Вас есть уникальная возможность <br /> <span class="f12">пятидневного размещения одной рекламной акции на сайте TATAMO</span> <span class="f14">бесплатно</span>.
+										<br />Также логотипы всех магазинов-партнеров бесплатно размещаются на главной странице.
+									</div>
+								</div>
+								</div></div>
+						</div>
+					</div>
+
+
+
+				</div>
+			</div>
+
+
+
+
+{% get_contact_form %}
+
+{% endblock content %}
+
+
+
+
+
+
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

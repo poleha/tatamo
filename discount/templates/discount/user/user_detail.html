@@ -1,0 +1,36 @@
+{% extends 'discount/base/base.html' %}
+{% block content %}
+<div class="user-details">
+<h5 class="user">{{ user }}</h1>
+    <label>E-mail:</label><span class="email">{{ user.email }}</span>
+    {% if shopstousers %}
+    <div>
+    <label>Является менеджером магазинов:</label>
+    {% for shopstouser in shopstousers %}
+    <div class="shops-info"><a href="{{ shopstouser.shop.get_absolute_url }}">{{ shopstouser.shop }}</a>
+    <form method="post" action={% url "discount:shops-to-users-confirm"%}>
+    {% csrf_token %}
+    <input type="hidden" name="shopstouser" value="{{ shopstouser.pk }}">
+    {% if not shopstouser.confirmed %}
+
+    <input type="submit" name="confirm" value="Подтвердить">
+    {% endif %}
+    {% if shopstouser.shop.managers_count > 1 %}
+    <input type="submit" name="cancel" value="Отменить">
+    {% endif %}
+    </form>
+    {% endfor %}
+    </div>
+    </div>
+{% endif %}
+    <form action="{% url 'discount:user-detail' %}" method="post" class="form user-form">
+    {% csrf_token %}
+    {{ user_form.as_p }}
+    {{ profile_form.as_p }}
+		<a href="{% url 'account_change_password' %}" class="change-pswrd">Сменить пароль</a>
+<input type="submit" value="Сохранить изменения" class="inline-b">
+    
+</form>
+
+</div>
+{% endblock content %}

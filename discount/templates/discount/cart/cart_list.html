@@ -1,0 +1,7 @@
+{% extends 'discount/base/base.html' %}
+
+{% block content %}
+{% for cart in carts %}
+    <a href="{{ cart.get_absolute_url }}">{{ cart.user_str }}</a>
+    {% endfor %}
+{% endblock content %}

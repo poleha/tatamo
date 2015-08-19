@@ -1,0 +1,83 @@
+<script>
+
+$(function() {
+
+
+function productTypeSelector(productTypeSelector, categorySelector){
+
+    var ptElem = $(productTypeSelector);
+    var cElem = $(categorySelector);
+    //ptElem.html('');
+    var disabled =  ptElem.attr("disabled");
+    ptElem.attr("disabled", "disabled");
+    var categoryId =  cElem.find('option:selected').val();
+    var typeId =  ptElem.find('option:selected').val();
+    var data = {
+        'category-id': categoryId,
+        'type-id': typeId,
+    };
+
+     $.ajax({
+            type: 'post',
+            url: '{% url 'discount:get-available-product-types-ajax' %}',
+            data: data,
+            success: function (data) {
+            if (disabled != 'disabled'){
+                        ptElem.html(data.text);
+                ptElem.removeAttr("disabled");
+                }
+
+
+                for (var key in data){
+                 if(key == 'text') continue;
+                 var block = $('#' + key +'-block');
+                 if (data[key]){
+                 block.removeClass('hidden');
+                 }
+                    else{
+                  block.addClass('hidden');
+                 }
+
+                }
+                /*
+                if (data.sizes) {
+                   $('#sizes-block').removeClass('hidden');
+                }
+                else{
+                $('#sizes-block').addClass('hidden');
+                }
+
+                if (data.colors) {
+                   $('#colors-block').removeClass('hidden');
+                }
+                else{
+                $('#colors-block').addClass('hidden');
+                }
+
+                */
+            },
+            error: function(data) {
+            ptElem.attr("disabled");
+            }
+        });
+
+};
+
+    $('#id_category').change(function(e){
+productTypeSelector('#id_product_type','#id_category');
+
+ });
+
+
+
+
+        productTypeSelector('#id_product_type','#id_category');
+
+
+
+
+
+
+});
+
+</script>

@@ -1,0 +1,21 @@
+{% extends 'discount/base/base.html' %}
+
+{% block content %}
+    <table>
+    <tr><th>Акция</th><th>Ссылка содержит обычную цену</th><th>Ссылка содержит цену со скидкой</th></tr>
+{% for product in products %}
+    <tr>
+    <td>
+     <a href='{{ product.get_absolute_url }}'>{{ product }}</a>
+    </td>
+    <td>
+     {{ product.contains_normal_price }}
+    </td>
+    <td>
+     {{ product.contains_stock_price }}
+    </td>
+    </tr>
+
+    {% endfor %}
+</table>
+{% endblock content %}

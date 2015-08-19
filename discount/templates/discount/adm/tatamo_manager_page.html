@@ -1,0 +1,11 @@
+{% extends 'discount/base/base.html' %}
+
+{% block content %}
+    <ol>
+{% for title, href in links %}
+   <li>
+    <a href="{{ href }}">{{ title }}</a>
+   </li>
+    {% endfor %}
+    </ol>
+{% endblock content %}

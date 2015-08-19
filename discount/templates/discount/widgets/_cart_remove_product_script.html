@@ -1,0 +1,22 @@
+<script>
+    $(function() {
+    var frm = $('.remove-product-from-cart-form');
+    frm.on('submit', function (caller) {
+        $.ajax({
+            type: frm.attr('method'),
+            url: $(caller.currentTarget).attr('action'),
+            data: $(caller.currentTarget).serialize(),
+            success: function (data) {
+                //$(".remove-product-from-cart-form").html(data);
+                //$("#remove-product-from-cart-form-errors").html("");
+                $('#product-' + data['pk']).fadeOut( "slow" );
+                $('#cart-count').html(data.count);
+            },
+            error: function(data) {
+                //$("#remove-product-from-cart-form-errors").html("Ошибка при отправке формы");
+            }
+        });
+        return false;
+    });
+    });
+</script>

@@ -1,0 +1,122 @@
+{% extends 'discount/base/base.html' %}
+{% load discount_tags %}
+{% load polls_tags %}
+
+{% block header %}
+{{ block.super }}
+<link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/themes/smoothness/jquery-ui.css" />
+{% endblock header %}
+
+
+{% block sidebar_left %} 
+    
+      
+<div class="row">      
+       
+<div id="sidebar-left" class="col-md-3 col-sm-4">
+
+{% if show_get_left_menu %}
+<div class="filter categories">           
+<h3>Категории</h3>           
+{% get_left_menu %}
+</div> 
+{% endif %}
+
+<div class="filter-menu"><div class="wrapper">
+	<div class="order-mobile">
+		{{ product_list_filter_form_order_by }}
+	</div>
+	<div class="show-filter-btn inline-b"> Фильтр</div>
+</div></div>
+
+
+{% if product_list_filter_form %}
+<form id = 'product_list_filter_form'>
+
+<div id = "product_list_filter_form_inside">
+{% include 'discount/product/_product_list_filter_form.html' %}
+</div>
+
+<div class="filter-actions">
+<a href="{{ request.path }}">Сбросить фильтр</a>
+<input type="submit" id="product-list-filter-main-submit" value="Показать">
+</div>
+
+</form>
+{% else %}
+<div class="empty-filter">
+Нет элементов для отображения
+</div>
+{% endif %}
+{% show_poll 1 %}
+</div>
+
+{% endblock sidebar_left %}
+
+{% block content %}
+
+	<div class="col-md-9 col-sm-8">
+
+	<div class="product-list-filters clearfix">
+
+
+		
+		
+		<div class="order inline-b">
+			<div class="title inline-b">Упорядочить по:</div>
+			<div class="list inline-b"><a href="" class="order-by inc" name="order-by-price" id="order-by-price">Цене</a>
+			<a href="" class="order-by dec" name="order-by-discount" id="order-by-discount">Скидке</a>
+			<a href="" class="order-by dec" name="order-by-popularity" id="order-by-popularity">Популярности</a>
+			<a href="" class="order-by inc" name="order-by-new" id="order-by-new">Новизне</a>
+			</div>
+		</div>
+		
+
+
+		
+		<div class="view  inline-b">
+
+			<a href="" class="icon-grid show-type" name="show-type-grid" id="show-type-grid"></a>
+            <a href="" class="icon-list show-type" name="show-type-list" id="show-type-list"></a>
+
+		</div>
+
+	</div>
+   
+   
+   
+
+   <div class="row">
+   <div id="main-content" class="col-md-12">
+   
+    {% include list_template_name %}
+    
+	</div>    
+	</div> <!- main-content ->
+
+</div>
+</div>
+
+
+
+
+
+<script>
+	$(function() {
+
+
+		if ('#product_list_filter_form') {
+			$('.show-filter-btn').click(function () {
+				$('#product_list_filter_form').toggleClass('shown');
+				$(this).toggleClass('active');
+			});
+		}
+
+	});
+
+
+
+</script>
+
+
+{% endblock content %}

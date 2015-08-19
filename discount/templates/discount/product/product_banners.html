@@ -1,0 +1,148 @@
+{% extends 'discount/base/base.html' %}
+{% load discount_tags %}
+
+
+{% block content %}
+
+<div class="product-banners">
+<h1 class="title-left"> Управление баннерами для акции <a href="{{ product.get_absolute_url }}">{{ product }}</a></h1>
+
+<p>
+Баннер должен быть формата 360 * 200 точек. Для одной акции допустимо несколько баннеров.
+<br />
+ВНИМАНИЕ! Баннер нужен только для размещение на главной странице в разделе "Спецразмещение".
+</p>
+
+
+<div>
+<form enctype="multipart/form-data" method="post" class="product-banners-form form" id="product-banners-form">
+{{ banner_formset.non_form_errors }}
+    {% csrf_token %}
+<div id="banner-formset">
+{{ banner_formset.management_form }}
+ {% for form in banner_formset %}
+     			{{ form.non_field_errors }}
+
+     <div class="form-group clearfix">
+    {% comment %}
+	<form enctype="multipart/form-data" method="post" class="product-banner-form form" action="{% url 'discount:send-banner-to-approve' product.pk %}">
+	{% endcomment %}
+    <div class="banner-form-replacer">
+    <div class="ajax-errors-placeholder"></div>
+
+     <div class="item">
+			{{ form.banner.label_tag }}
+			<div class="field inline-b wrapper">
+			{{ form.banner }}
+			{{ form.banner.errors }}
+			</div>
+	</div>
+
+
+
+     <div class="item">
+			{{ form.shop_comment.label_tag }}
+			<div class="field inline-b  wrapper">
+			{{ form.shop_comment }}
+			{{ form.shop_comment.errors }}
+			</div>	
+     </div>
+
+     <div class="item">
+			{{ form.tatamo_comment.label_tag }}
+			<div class="field inline-b  wrapper">
+			{{ form.tatamo_comment }}
+			{{ form.tatamo_comment.errors }}
+			</div>
+	</div>
+
+
+ <div class="hidden">
+	 {{ form.status }}
+        {{ form.id }}
+{{ form.product }}
+</div>
+
+		<div class="{{ form.instance.form_status_cls }}">{{ form.instance.status_text }}</div>
+</div>
+{% endfor %}
+</div>
+ <input type="submit" value="Подтвердить">
+<a class="button white" href="{% url 'discount:product-detail' product.pk %}">Выйти без сохранения</a>
+</div>
+</form>
+</div>
+
+
+
+</div>
+
+
+<script>
+
+
+$(function() {
+/*
+$('#action-formset input, #action-formset select').change(function(e){
+
+console.log(e.currentTarget);
+
+});
+
+
+
+$('.banner-to-submit-button').click(function(e){
+    var block = $(this).closest('.banner-form-replacer');
+
+    block.children('.ajax-err').remove();
+    var id = this.id;
+    var num = id.replace('banner-button-productbanner_set-', '')
+    var imageElem = block.find('#id_productbanner_set-'+ num +'-banner');
+    var image = imageElem.get(0).files[0];
+    var comment = $('#id_productbanner_set-' + num + '-shop_comment').val();
+    var product_id = $('#id_productbanner_set-' + num + '-product').val();
+    var banner_id = $('#id_productbanner_set-' + num + '-id').val();
+
+
+    //e.preventDefault();
+
+    var data = new FormData();
+    if (image) data.append('banner', image);
+    if (comment) data.append('shop_comment', comment);
+    if (product_id) data.append('product', product_id);
+    if (banner_id) data.append('id', banner_id);
+
+    var frm = $('#product-actions-form');
+$.ajax({
+                type: 'post',
+                url: '{ url 'discount:send-banner-to-approve' }',
+                data: data,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+
+                    if (data.status == 1){
+                    var form_count = $('#id_productbanner_set-TOTAL_FORMS').val() - 1;
+                    $('#id_productbanner_set-TOTAL_FORMS').val(form_count);
+                    $('#id_productbanner_set-' + num + '-id').val(data.text);
+                    block.addClass('hidden').fadeOut('slow');
+                    //block.html('').fadeOut('slow');
+                    //block.html(data.text).fadeIn('slow');
+                    }
+                   else{
+                    block.children('.ajax-errors-placeholder').after('<div class="ajax-err">Пожалуйста, присоедините изображение</div>');
+                    }
+                },
+                error: function (data) {
+                block.find('.ajax-errors').text('Ошибка при отправке');
+                }
+});
+});
+*/
+});
+
+
+</script>
+
+
+{% endblock content %}

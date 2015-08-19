@@ -1,0 +1,56 @@
+
+
+<div class="search-inner hidden popup">
+<form method="post" id="get-product-by-code-form" class="clearfix" action="{% url 'discount:get-product-by-code' %}">
+    
+    
+    <div class="field">
+        {% csrf_token %}
+        {{ form.as_p }}
+    </div>
+    
+    <div class="search-button"> <input type="submit" value="Найти"> </div> 
+
+    
+</form>
+
+<div id="get-product-by-code-form-error"></div>
+
+</div>
+
+<script>
+	
+	$(function() {
+		$(".search-icon").hover(function () {
+			$(".search-inner").toggleClass("hidden");
+		});		
+	});
+	
+    $(function() {
+    var frm = $('#get-product-by-code-form');
+    frm.on('submit', function (event, machineGenerated) {
+        if(machineGenerated) return;
+        event.preventDefault();
+        $.ajax({
+            type: frm.attr('method'),
+            url: frm.attr('action'),
+            data: frm.serialize(),
+            success: function (data) {
+                if (data.status == 1) {
+                    $("#get-product-by-code-form-error").html("");
+                    if (event.isDefaultPrevented()) {
+                        frm.trigger('submit', [true]);
+                    }
+                }
+                else {
+                $("#get-product-by-code-form-error").html(data.message);
+                }
+            }   ,
+            error: function(data) {
+                $("#get-product-by-code-form-error").html('Акция не найдена');
+            }
+        });
+        //return false;
+    });
+    });
+</script>

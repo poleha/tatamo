@@ -1,0 +1,18 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg">
+<metadata>Copyright (C) 2015 by original authors @ fontello.com</metadata>
+<defs>
+<font id="tatamo" horiz-adv-x="1000" >
+<font-face font-family="tatamo" font-weight="400" font-stretch="normal" units-per-em="1000" ascent="850" descent="-150" />
+<missing-glyph horiz-adv-x="1000" />
+<glyph glyph-name="arrow" unicode="&#xe800;" d="m776 350l1-1-287-481-33 20 276 462-276 462 33 19 287-480-1-1z" horiz-adv-x="1281" />
+<glyph glyph-name="arrow-prev" unicode="&#xe801;" d="m458 350l-1 1 287 480 33-19-276-462 276-462-33-20-287 481 1 1z" horiz-adv-x="1281" />
+<glyph glyph-name="list" unicode="&#xe802;" d="m303 715h182v-183h-182v183z m0-456h182v182h-182v-182z m0-274h182v183h-182v-183z m273 0h456v183h-456v-183z m0 730v-183h456v183h-456z m0-456h456v182h-456v-182z" horiz-adv-x="1281" />
+<glyph glyph-name="grid" unicode="&#xe803;" d="m284-49h319v319h-319v-319z m45 274h228v-228h-228v228z m365 455v-319h319v319h-319z m273-273h-228v228h228v-228z m-273-456h319v319h-319v-319z m45 274h228v-228h-228v228z m-455 136h319v319h-319v-319z m45 274h228v-228h-228v228z" horiz-adv-x="1281" />
+<glyph glyph-name="cart" unicode="&#xe804;" d="m273-109c-44 0-79 35-79 79s35 79 79 79c43 0 78-36 78-79s-35-79-78-79z m0 113c-19 0-34-16-34-34s15-34 34-34c18 0 33 15 33 34s-15 34-33 34z m393-113c-44 0-79 35-79 79s35 79 79 79 79-36 79-79-36-79-79-79z m0 113c-19 0-34-16-34-34s15-34 34-34c18 0 34 15 34 34s-16 34-34 34z m-473 223h551l198 413h-850l-45 184h-9-66-122v-75h140l165-672h14 61 577v75h-596l-18 75z m-83 338h712l-126-263h-521l-65 263z" horiz-adv-x="1281" />
+<glyph glyph-name="metro" unicode="&#xe805;" d="m650 811c-239 0-433-194-433-433s194-433 433-433 433 194 433 433-194 433-433 433z m0-46c214 0 387-173 387-387 0-34-5-67-13-99h-162l-137 311-1-2-73-177c-1 0-1 0-1 0l-73 177-2 2-136-311h-163c-8 32-13 65-13 99 0 214 173 387 387 387z m0-774c-160 0-298 98-357 237h265l46 102 46-103v-1l0 1 0-1v1l46 103 46-102h265c-59-139-197-237-357-237z" horiz-adv-x="1281" />
+<glyph glyph-name="ok" unicode="&#xe806;" d="m526-2l0-1-64-64-1 0-1 0-64 64 1 1-322 321 65 65 321-322 636 636 65-64-636-636z" horiz-adv-x="1281" />
+</font>
+</defs>
+</svg>

@@ -1,0 +1,42 @@
+{% extends 'discount/base/base.html' %}
+{% load staticfiles %}
+{% block content %}
+<div class="page">
+
+<div class="how block">
+				<div class="container">
+					<div class="row">
+						<div class="col-md-12">
+							<div class="block-inner border">
+								<div class="items">
+									<div class="row">
+										<div class="col-md-3 col-sm-4 item item-1">
+											<div class="img"><img src="{% static "discount/images/shop-offer/1.jpg" %}" alt=""></div>
+											<div class="desc-title">1. Магазины размещают на Tatamo.ru информацию о товарах со скидкой.</div>
+											<div class="desc">Акции, размещенные на Tatamo.ru, уникальные и нигде не повторяются.</div>
+										</div>
+										<div class="col-md-1 dots">
+										.............
+										</div>
+										<div class="col-md-3 col-sm-4 item item-2">
+											<div class="img"><img src="{% static "discount/images/shop-offer/2.jpg" %}" alt=""></div>
+											<div class="desc-title">2. Вы выбираете на Tatamo.ru понравившийся товар и получаете промо-код акции.</div>
+										</div>
+										<div class="col-md-1 dots">
+										.............
+										</div>
+										<div class="col-md-3 col-sm-4 item item-3">
+											<div class="img"><img src="{% static "discount/images/shop-offer/3.jpg" %}" alt=""></div>
+											<div class="desc-title">3. По полученному промо-коду Вы получаете в магазине скидку.</div>
+										</div>
+									</div>
+
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+</div>
+{% endblock content %}

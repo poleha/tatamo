@@ -1,0 +1,17 @@
+<ul class="subs inline-b"><li class="parent">
+    {% if user.is_shop_manager %}
+	<span class="my-shop" data-icon="&#xe066;">Мой магазин</span>
+    {% else %}
+	<span data-icon="&#xe09b">Мои подписки</span>
+    {% endif %}
+	<ul class="b-menu inner-menu popup">
+		{% for menu in full_menu_list %}
+		<li class=" {{ menu.cls }}">
+			<a href="{{ menu.href }}"{% if menu.link_class %} class="{{ menu.link_class }}"{% endif %}>{{ menu.title }}</a>
+		</li>
+		{% endfor %}
+
+	</ul>
+
+
+	</li></ul>

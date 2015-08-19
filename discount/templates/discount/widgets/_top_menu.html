@@ -1,0 +1,10 @@
+<div class="navbar abs">   <ul class="inline-b">
+{% for menu_item in menu_items %}
+    
+	<li data-icon="&#xe096;" class='top-menu-item {{ menu_item.cls }}'>
+            <a href="{{ menu_item.href }}">{{ menu_item.title }}</a>
+        </li>
+   
+{% endfor %}
+	</ul>
+</div>

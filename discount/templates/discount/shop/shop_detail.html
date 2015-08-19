@@ -1,0 +1,91 @@
+{% extends 'discount/base/base.html' %}
+{% load discount_tags %}
+
+{% block content %}
+
+
+<div id="shop-details" class="row">
+
+    <div class="col-md-12">
+
+		{% if edit_link %}
+		<a class="btn" href="{{ edit_link }}">Редактировать</a>
+		<label>Статус:</label>{{ shop.status_text }}
+        <div><a href="{% url 'discount:product-export-all' %}">Выгрузить все акции магазина в CSV</a></div>
+
+        {% endif %}
+       
+        <div class="row"><div class="col-md-12">
+           <div class="shop-info">
+            <div class="row">
+            <div class="col-md-3 col-sm-4 image-wrapper">
+                <img src="{{ shop.image.thumb300 }}">
+            </div>
+            <div class="col-md-9 col-sm-8">
+                <h5>{{ shop }}</h5>
+                <div class="shop-contacts">
+                   
+				{% shop_link shop %}
+
+                    <span>{{ shop.body|linebreaks }}</span>
+
+                    {% if shop.use_custom_adress %}
+                    {% if shop.custom_adress %}
+					<p class="adress"  data-icon="&#xe096;">
+					<span>{{ shop.custom_adress|linebreaks }}</span>
+                     {% endif %}
+					</p> 
+                    {% else %}
+					<p class="adress" data-icon="&#xe096;">
+                    <span>
+                    {{ shop.city }}
+                    {{ shop.region }}
+                    {{ shop.area }}
+                    {{ shop.street }}
+                    {{ shop.house }}
+                    {{ shop.building }}
+                    {{ shop.flat }}
+                    {{ shop.index }}
+                    {{ shop.settlement }}
+					</span>
+                    {% endif %}
+                    </p>
+                    {% if shop.phones.all.exists %}
+					<p class="phone" data-icon="&#xe048;">
+					<span>
+                    {% for phone in shop.phones.all %}
+                    {{ phone }} <br />
+                    {% endfor %}
+					</span>
+                    {% endif %}
+                    </p>
+                  
+                {% if shop.work_time %}
+          <p class="time">Время работы: {{ shop.work_time|linebreaks }}</p>
+        {% endif %}
+                </div>
+            </div>
+            </div>
+            </div>
+        </div></div>
+
+        <div class="row shop-item item-list category-main">
+            {% for product in products %}
+            {% product_info_main product %}
+            {% endfor %}
+             
+        </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+{% include 'discount/general/_pager.html' %}
+
+{% endblock content %}

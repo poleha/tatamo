@@ -1,0 +1,49 @@
+{% extends 'discount/base/base.html' %}
+{% load discount_tags %}
+{% block content %}
+{% shop_balance %}
+
+<form class="fltr-p fltr" method="get">
+
+
+<div class="item inline-b">
+    {{ form.start_date.label_tag }}
+	<div class="field inline-b">
+	{{ form.start_date.errors }}
+	{{ form.start_date }}
+	</div>
+</div>
+
+
+<div class="item inline-b">
+	{{ form.end_date.label_tag }}
+	<div class="field inline-b">
+	{{ form.end_date.errors }}
+    {{ form.end_date }}
+	
+</div>
+</div>
+
+<input type="submit" name="submit" value="Показать">
+</form>
+
+<table class="balance">
+<th>Период</th><th>Сумма</th><th>Операция</th><th>Комментарий</th><th>Акция</th>
+    {% for payment in payments %}
+    <tr>
+    <td>{{ payment.created }}</td>
+    <td>{{ payment.points }}</td>
+    <td>{{ payment.operation_text }}</td>
+    <td>{{ payment.get_comment }}</td>
+        {% if payment.product %}
+        <td><a href='{{ payment.product.get_absolute_url }}'>{{ payment.product }}</a></td>
+    {% endif %}
+    </tr>
+    {% endfor %}
+<tr>
+<td>Итого за период</td>
+<td>{{ points_total }}</td>
+</tr>
+</table>
+
+{% endblock content %}

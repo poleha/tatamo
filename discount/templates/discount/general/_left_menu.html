@@ -1,0 +1,8 @@
+
+            <ul class="left-menu">
+{% for menu in full_menu_list %}
+ <li class="{{ menu.cls }}">
+  <a href="{{ menu.href }}">{{ menu.title }}</a>
+ </li>
+{% endfor %}
+            </ul>

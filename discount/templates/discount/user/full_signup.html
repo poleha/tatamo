@@ -1,0 +1,17 @@
+{% extends 'discount/base/base.html' %}
+{% load staticfiles %}
+{% block content %}
+ <form class='auth-form form' action="{% url 'discount:signup' %}" method="post" id="signup-form">
+    {% csrf_token %}
+  {{ form.as_p }}
+  {% if redirect_field_value %}
+  <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+  {% endif %}
+  <button type="submit">Зарегистрироваться</button>
+</form>
+
+
+{% endblock content %}
+
+
+

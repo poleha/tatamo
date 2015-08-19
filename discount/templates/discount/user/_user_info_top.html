@@ -1,0 +1,105 @@
+
+
+
+
+    
+{% if not request.user.is_anonymous %}
+{% load discount_tags %}
+
+
+<div class="user-bar inline-b lg clearfix">   
+    
+   <ul class="inline-b right">
+
+	   <li class="user parent" data-icon="&#xe005;">
+		   {{ request.user }}
+   <ul class="inner-menu b-menu popup">
+	   <li><a href="{% url 'discount:user-detail' %}">Информация о пользователе</a></li>
+	   {% if user.is_tatamo_manager %}
+        <li><a href="{% url 'discount:tatamo-manager-page' %}">Страница менеджера Татамо</a></li>
+       {% endif %}
+       <li class="logout">
+		   <a href="{% url 'account_logout' %}">Выйти</a>
+	   </li>
+</ul> 
+       </li>
+   
+    
+</ul>
+</div>
+{% get_user_top_menu %}    
+
+{% user_top_right_menu %}
+
+
+{% endif %} 
+
+
+
+
+{% if request.user.is_anonymous %}
+
+<div class="user-bar inline-b lg clearfix">      
+<ul class="inline-b right">   
+	<li class="lgn" data-icon="&#xe005;" >
+        <input type="button" class="login-button" value="Войти"> 
+		
+	</li><span class="grey inline-b">|</span>
+	<li class="register">
+	<a href="{% url 'discount:signup' %}">Зарегистрироваться</a>
+	</li>
+<div class='popup hidden' id="login-block">
+	<form method="post" id='login-form' action="{% url 'discount:login' %}">
+			  {% login_form %}
+	 </form>
+</div>   
+    
+</ul>
+</div>
+
+
+ 
+
+
+
+{% endif %}
+
+
+
+
+
+
+
+<script>
+$(function() {
+     var blc = $("#login-block");
+    if (blc){
+
+    $('.lgn').click(function () {
+    blc.toggleClass('hidden');
+		$(this).toggleClass('active');
+    });
+ }
+
+$(document).on('submit', '#login-form', function (event) {
+                $.ajax({
+                type: 'post',
+                url: "{% url 'discount:login' %}",
+                data: $('#login-form').serialize(),
+                success: function (data) {
+                  //window.location.replace("/discount");
+                    window.location.href = location.href;
+                },
+                 error: function(data) {
+
+                $('#login-form').html(data.responseJSON.html);
+            }
+
+            });
+    return false;
+        });
+
+});
+
+</script>
+

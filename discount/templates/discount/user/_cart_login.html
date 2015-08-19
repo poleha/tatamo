@@ -1,0 +1,12 @@
+  {% csrf_token %}
+  {{ form.as_p }}
+  
+  <button class="primaryAction" type="submit">Войти и подписаться на акции</button>
+<a class="button forget secondaryAction" href="{% url 'account_reset_password' %}">Забыли пароль?</a>
+
+
+
+
+
+
+

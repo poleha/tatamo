@@ -1,0 +1,53 @@
+<script>
+
+$(document).on('click', '.action-submit', function (caller) {
+       $(this).closest('form').find('.submit-type').val($(this).attr('name'));
+   $('#submit-type').val('to-approve');
+   });
+
+
+$(function(){
+    //var frm = $('.unsubscribe-form');
+    $(document).on('submit', '.ptc-action-form', function (caller) {
+        $.ajax({
+            type: 'post',
+            url: $(caller.currentTarget).attr('action'),
+            data: $(caller.currentTarget).serialize(),
+            success: function (data) {
+                if (data.status != 1) {
+                    location.href = data.redirect_to;
+                } else {
+                    $(caller.currentTarget).closest('.add-to-cart-outer, .get-code').html(data.html);
+                    $('#cart-count').html(data.count);
+                    $('.code-list-menu').text(data.code_list_menu);
+                    $('.finished-list-menu').text(data.finished_list_menu);
+                    var pk = data.pk;
+                    $('#ptc-add-block-' + pk).html('');
+
+                    if (pk > 0) {
+
+                        $.ajax({
+                            type: 'post',
+                            url: ("/coupon_status/" + pk + '/'),
+                            data: {},
+                            success: function (inner_data) {
+                                $('#coupon-status-' + pk).html(inner_data);
+                                $('#ptc-add-block-' + pk).html('');
+                            },
+                            error: function (inner_data) {
+
+                            }
+                        });
+                    }
+
+
+                }
+            },
+            error: function(data) {
+                //$('.add-to-favourite').html(data);
+            }
+        });
+        return false;
+    });
+});
+</script>

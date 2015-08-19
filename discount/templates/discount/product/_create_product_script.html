@@ -1,0 +1,276 @@
+<script type="text/javascript">
+
+
+    //product-create-form
+    $(function() {
+
+
+        function sortImages() {
+            var weight = 1;
+            var inputs = $('.image-order-input');
+            for (var i = 0; i < inputs.length; i++) {
+                if (!($(inputs[i]).closest('.images-table').attr('class').indexOf('hidden') + 1)) {
+                    $(inputs[i]).val(weight++);
+                }
+            }
+        }
+
+        $('#images_formset_add_field').click(function () {
+            cloneMore('li.ui-sortable-handle:last', 'images');
+            sortImages();
+        });
+
+        //$ - главная функция jquery
+        //$('#components_formset_add_field').click() - эта функция ждет внутри себя другую функцию
+        //   function() {
+        //        cloneMore('div.table:last', 'productcomponent_set');
+        //    }
+        // это функция, которая будет вызываться при собитии(click). Она не получает аргументов.
+        //И вызывает другую функцию:
+
+        function cloneMore(selector, type) {
+            var newElement = $(selector).clone(true);  //Клонируем последний элемент со всей датой и обработчиками
+
+            $(newElement).removeClass('hidden');
+            var total = $('#id_' + type + '-TOTAL_FORMS').val(); //Получаем количество форм. Django создает такой input, мы читаем его значение
+            newElement.attr('id', 'single_image_images-' + (total));
+            //alert(total);
+            var innerDiv = newElement.find('.images-table');
+            innerDiv.removeClass('hidden');
+
+
+            newElement.find(':input').each(function () { // find(':input') Находим в клонированном элементе все поля ввода
+                //each - обход элементов. Внутри должна быть объявлена функция, которая имеет доступ к this - текущему элементу
+                //Обращаясь как this - просто к элементу, $(this) - типа как jquery элементу
+                if (this.type != 'button' && this.type != 'submit') {
+                    var name = $(this).attr('name').replace('-' + (total - 1) + '-', '-' + total + '-');
+                    if ($(this).attr('name')) {
+                        $(this).attr('name', name);
+                    }
+                    $(this).val('');
+
+                    //Получаем аттрибут 'name' текущего input
+                    //И заменяем в нем например -4- на -5-
+                    var id = 'id_' + name; //Очевидно
+                    $(this).attr('id', id);
+                    if ($(this).attr('checked')) {
+                        $(this).removeAttr('checked');
+                    }
+
+                }
+                //устанавливаем input'у аттрибуты name и id. Устанавливаем значение  = '', удаляем аттрибут (removeAttr) checked
+            });
+            //newElement.find('.image-order-input').val(+total + 1);
+            newElement.find('label').each(function () {  //Находим каждую метку внутри newElement и перебираем
+                var newFor = $(this).attr('for').replace('-' + (total - 1) + '-', '-' + total + '-');
+                //Находим каждое значение $(this).attr('for') аттрибута for. Меняем в нем например -4- на -5-
+                $(this).attr('for', newFor); //присваиваем каждому for новое значение
+            });
+            total++;    //Прибавляем 1 к общему числу элементов
+
+            $('#id_' + type + '-TOTAL_FORMS').val(total); //Устанавливаем это значение в рабочий input, из которого считали в начале
+            $(selector).after(newElement); //вставляем созданный после selector, то есть после последней готовой таблицы
+
+        }
+
+
+        function cleanErrors(frm) {
+
+            $(frm).find('.red').removeClass('red');
+            //for(var i=0;i<elems.length;i++){
+            //    $(elems[i]).removeClass('red');
+            // }
+            $(frm).find('#form-non-field-errors').html('');
+            $(frm).find('.ajax-errors').remove();
+            // for(var i=0;i<inputs.length;i++){
+            //     $(inputs[i]).remove();
+            // }
+        }
+
+        var frm = $('#product-create-form');
+        frm.on('submit', function (event, machineGenerated) {
+
+            $('.submit-with-type').attr('disabled', 'disabled');
+
+            //$("input").removeAttr("disabled"); //Noramlly disabled aren't posted
+            if (machineGenerated) return;
+            event.preventDefault();
+            var elem;
+            var errors;
+
+
+            $.ajax({
+                type: frm.attr('method'),
+                url: frm.attr('action'),
+                data: new FormData(this),
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    if (data.form_valid == true) {
+                        cleanErrors(frm);
+                        if (event.isDefaultPrevented()) {
+                            frm.trigger('submit', [true]);
+                        }
+                    }
+                    else {
+
+                        cleanErrors(frm);
+                        $('.submit-with-type').removeAttr('disabled');
+                        for (var key in data.form_non_field_errors) {
+                            errors = data.form_non_field_errors;
+                            elem = $('#form-non-field-errors');
+                            elem.before('<div class="ajax-errors">' + errors[key] + '</div>');
+                        }
+
+                        for (var key in data.form_errors) {
+                            errors = data.form_errors;
+                            elem = $('#id_' + key);
+                            if (elem.length > 0) {
+                                var div = elem.closest('div');
+                                div.addClass('red');
+                                div.before('<div class="ajax-errors">' + errors[key] + '</div>');
+                            }
+                            else {
+                                elem = $('#form-non-field-errors');
+                                elem.before('<div class="ajax-errors">' + errors[key] + '</div>');
+                            }
+
+                        }
+
+
+                        for (var key in data.image_formset_non_form_errors) {
+                            var errors = data.image_formset_non_form_errors;
+                            elem = $('#form-non-field-errors');
+                            elem.before('<div class="ajax-errors">' + errors[key] + '</div>');
+                        }
+
+                        for (var form_key in data.image_formset_form_errors) {
+                            for (var key in data.image_formset_form_errors[form_key]) {
+                                var prefix = "#id_images-" + form_key + '-';
+                                elem = $(prefix + key);
+                                var div = elem.closest('div');
+                                div.addClass('red');
+                                div.before('<div class="ajax-errors">' + data.image_formset_form_errors[form_key][key] + '</div>');
+                            }
+                        }
+
+                        $("html, body").animate({scrollTop: 0}, "fast");
+                    }
+                },
+                error: function (data) {
+                $('.submit-with-type').removeAttr('disabled');
+                }
+
+            });
+
+        });
+
+//$('#generate-code').click(function(){
+//var randomstring = Math.random().toString(36).slice(-8);
+//    $('#id_code').val(randomstring);
+//        });
+//frm.trigger('submit', [true]);
+
+        var gpcf = $('#generate-product-code-form')
+        $('#generate-product-code-button').on('click', function () {
+            gpcf.trigger('submit');
+        });
+
+        gpcf.on('submit', function () {
+            $.ajax({
+                type: gpcf.attr('method'),
+                url: gpcf.attr('action'),
+                data: gpcf.serialize(),
+                success: function (data) {
+                    $('#id_code').val(data.code)
+                    $('#id_code_hidden').val(data.code)
+
+
+                },
+                error: function (data) {
+
+                }
+            });
+            return false;
+        });
+
+
+
+
+        $('.submit-with-type').click(function (e) {
+            $('#submit-type').val(this.name);
+
+        });
+
+        /*
+        $('#to-approve').click(function () {
+            $('#submit-type').val('to-approve');
+
+        });
+        $('#to-save').click(function () {
+            $('#submit-type').val('to-save');
+
+        });
+        $('#to-stop').click(function () {
+            $('#submit-type').val('to-stop');
+
+        });
+
+//$('#to-project').click(function(){
+//   $('#submit-type').val('to-project');
+//   });
+
+        $('#to-start').click(function () {
+            $('#submit-type').val('to-start');
+
+        });
+
+        $('#to-suspend').click(function () {
+            $('#submit-type').val('to-suspend');
+
+        });
+
+*/
+        $('.delete-image-button').on('click', function (event) {
+            var block_li = event.currentTarget.closest('li');
+            var block = event.currentTarget.closest('div');
+            var id = block.id.replace('single-image-images-', '');
+            var delete_input = $('#id_images-' + id + '-DELETE');
+            $(delete_input).prop('checked', true);
+            $(block).addClass('hidden').fadeOut("slow");
+            sortImages();
+        });
+
+
+        $("#sortable").sortable({
+            revert: true,
+            stop: sortImages,
+        });
+        $("#sortable").disableSelection();
+
+        sortImages();
+        gpcf.trigger('submit');
+
+
+        $('#id_use_simple_code').change(function(e){
+        if ($('#id_use_simple_code').prop('checked') == true){
+        $('#code-block').addClass('hidden');
+        $('#simple-code-block').removeClass('hidden');
+
+        }
+            else{
+        $('#code-block').removeClass('hidden');
+        $('#simple-code-block').addClass('hidden');
+
+        }
+
+        });
+
+
+    });
+
+
+
+
+
+</script>

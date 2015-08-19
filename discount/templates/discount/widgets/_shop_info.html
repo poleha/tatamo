@@ -1,0 +1,37 @@
+{% load discount_tags %}
+<div class="shop-info">
+
+	<div class="title top">
+		<h4>О магазине</h4>
+	</div>
+
+
+	<div class="shop-main clearfix">
+	
+	<div class="image-wrapper"><a href='{{ shop.get_absolute_url }}'><img src="{{ shop.image.thumb100 }}"> </a></div>
+	
+	<div class="desc">
+	
+	<div class="shop"><a href='{{ shop.get_absolute_url }}'>{{ shop }}</a></div>
+
+	
+	{% shop_link shop%}
+	
+	{% if shop.custom_adress %}
+	<p>{{ shop.custom_adress }}</p>
+	{% endif %}
+	
+	<p>
+	{% for phone in shop.phones.all %}
+	<div>{{ phone }}</div>
+	{% endfor %}
+	</p>
+	
+	{% if shop.work_time %}
+	<p>Время работы: {{ shop.work_time }}</p>
+	{% endif %} 
+	
+    </div>
+    
+	</div>
+	

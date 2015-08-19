@@ -1,0 +1,142 @@
+{% load discount_tags %}
+{% load static %}
+
+<div class="coupon-container" style="line-heigth: 1.5; color: #6b7777; width: 80%; margin: 0 auto; font-family: Arial, Sans-serif; font-size: 12px; 
+margin-top: 35px;" >
+
+
+	<div class="img" style="width: 192px; height: auto; margin: 0 auto;" >
+		<img src="{% get_site_url %}{% static "discount/images/logo3.png" %}"> </div>
+	
+   
+    <div style="margin-top: 40px; width: 100%; overflow: hidden; clear: both;">
+
+
+    
+		
+		
+      
+
+		
+		<div id="product-{{ product.pk }}" class="{{ product.get_class }} product" style="line-height: 1.5; 
+		overflow: hidden; clear: both; padding: 30px; border: 1px solid #e3e8ea;">
+			<img style="float: left; margin: 0 20px 20px 0; " src="{% get_site_url %}{{ qr_url }}">
+
+			<div style="display: inline-block; border-bottom: 1px solid #000; padding-bottom: 5px; margin-bottom: 10px;">
+			<div style=" display: inline-block; margin: 10px 10px 0 0; font-size: 18px; font-weight: bold; 
+			color: #000; text-transform: uppercase">
+				{{ product.brand }}
+			</div>
+			
+			<h7  style="display: inline-block; margin-top: 5px; font-size: 14px; font-weight: normal; ">
+			{{ product }}</h7>
+			</div>	<br />		
+			
+			<div style="display: inline-block;">Цена по акции: <span style="font-size: 16px; font-weight: bold; color: #000;"> {{ product.stock_price }} руб.</span></div>
+			<div style="display: inline-block; border: 1px solid #e3e8ea; padding: 1px 3px;" >Скидка: {{ product.percent }} %</div>
+			<div style="margin-top: 5px;"> Промокод: <span style="color: #000;">{{ code }}</span></div>
+
+			<div style="clear: both">
+{{ product.body }}
+			</div>
+        
+       
+			
+
+            {% comment %}
+        <div class="code" style=" padding: 5px 10px;
+                                 display: inline-block;
+                                 margin-bottom: 10px;">
+                                 
+            {% get_product_code product %}</div>
+            {% endcomment %}
+            
+            
+        <div class="end-date" style="margin-bottom: 10px; margin-top: 30px;">
+			Дата окончания акции: <span style="color: #000; display: inline-block;">   {% get_history_value product 'end_date' %} </span> 
+            </div>
+        <div class="status" style="margin-bottom: 10px;">
+			<span style="margin-right: 5px;">Статус:</span><span style="color: #000; display: inline-block;">    {% get_history_value product 'status' %} </span> 
+            </div>
+
+        {% if product.sizes_man.all.count > 0 %}
+            <div class="sizes" style="margin-bottom: 10px;">
+			<span style="margin-right: 5px;"> Размеры: </span> <span style="color: #000; display: inline-block;">{% get_history_m2m_values product 'sizes_man' %} </span>
+      </div>
+        {% endif %}
+
+        {% if product.sizes_woman.all.count > 0 %}
+        <div class="sizes" style="margin-bottom: 10px;">
+			<span style="margin-right: 5px;"> Размеры: </span> <span style="color: #000; display: inline-block;">{% get_history_m2m_values product 'sizes_woman' %} </span>
+      </div>
+        {% endif %}
+
+        {% if product.sizes_shoes.all.count > 0 %}
+        <div class="sizes" style="margin-bottom: 10px;">
+			<span style="margin-right: 5px;"> Размеры: </span> <span style="color: #000; display: inline-block;">{% get_history_m2m_values product 'sizes_shoes' %} </span>
+      </div>
+          {% endif %}
+
+{% if product.sizes_childs.all.count > 0 %}
+        <div class="sizes" style="margin-bottom: 10px;">
+			<span style="margin-right: 5px;"> Размеры: </span> <span style="color: #000; display: inline-block;">{% get_history_m2m_values product 'sizes_childs' %} </span>
+      </div>
+{% endif %}
+
+    {% if product.colors.all.count > 0 %}
+        <div class="colors" style="margin-bottom: 10px;">
+			<span style="margin-right: 5px;"> Цвета:</span><span style="color: #000; display: inline-block;"> {% get_history_m2m_values product 'colors' %} </span> 
+      </div>
+      {% endif %}
+
+   
+			<div class="shop" style="margin-top: 40px; font-size: 12px; border-top: 1px dotted #e3e8ea; 
+									 border-pbottom: 1px dotted #e3e8ea; padding: 30px 0 10px 0;">
+				<div style="margin-bottom: 10px; font-size: 16px; font-weight: bold; color: #000;">{{ product.shop }}</div>
+				{% if product.shop.custom_adress %}
+				<div style="margin-bottom: 10px;" >Адрес: {{ product.shop.custom_adress }}</div>
+				{% endif %}
+				{% if product.shop.site %}
+				<div style="margin-bottom: 10px;" >Сайт: {{ product.shop.site }}</div>
+				{% endif %}
+				<div style="margin-bottom: 10px;" >
+				{% for phone in product.shop.phones.all %}
+				Телефон: {{ phone }} <br />
+				{% endfor %}
+				</div>
+				{% if product.shop.work_time %}
+				<div style="margin-bottom: 10px;" >Время работы: {{ product.shop.work_time }}</div>
+				{% endif %}
+
+			</div>
+   
+   
+    </div> 
+
+  
+
+
+
+</div>
+
+		   <ul style="margin: 40px 0 40px;
+			   padding: 40px 40px;
+			   background: #F0F4F5 none repeat scroll 0% 0%;
+			   line-height: 2;
+			   color: #000;
+			   font-size: 11px;">
+
+{% for condition in product.product_conditions %}
+			   <li  style="display: block; line-height: 1.2; margin-bottom: 10px; "  data-icon="&#8250"  >
+{{ condition }}
+</li>
+
+{% endfor %}
+</ul>
+<div  style="width: 100%; text-align: right; margin-top: 20px;">
+	<a style="display: inline-block; margin-left: 15px; margin-bottom: 10px; color: #000; text-decoration: underline;" href="{% get_site_url %}{{ product.get_absolute_url }}">На страницу акции</a>
+	<a style="display: inline-block; margin-left: 15px; margin-bottom: 10px; color: #000; text-decoration: underline;" href="{% get_site_url %}{{ product.get_pdf_url }}">Открыть купон в формате PDF</a>
+	<a style="display: inline-block; margin-left: 15px; margin-bottom: 10px; color: #000; text-decoration: underline;"href="{% get_site_url %}{{ product.get_coupon_url }}">Открыть купон</a>
+</div>
+
+</div>

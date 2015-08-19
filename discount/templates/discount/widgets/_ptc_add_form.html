@@ -1,0 +1,27 @@
+{% if not is_ajax %}
+
+<div class="clearfix add-to-cart-outer" id="ptc-add-block-{{ product.pk }}">
+{% endif %}
+
+{% if action %}
+
+<div class="add-to-cart"> <div class="{{ block_cls }}">
+<form method="post" class="ptc-action-form" id="ptc-add-form-{{ product.pk }}" action="{{ action_url }}">
+{% csrf_token %}
+<div class="{{ inner_block_cls }}">
+<span class="{{ action }}-product-cart-value">{{ submit_button_name }}</span>
+    <input class="{{ input_cls }}" type="submit" value="" name="{{ action }}">
+</div>
+<input type="hidden" class='submit-type' name="submit-type" value="">
+
+</form>
+
+</div></div>
+
+{% endif %}
+{% if not is_ajax %}
+
+</div>
+{% endif %}
+
+

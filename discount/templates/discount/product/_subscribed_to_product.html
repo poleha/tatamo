@@ -1,0 +1,15 @@
+<h2>{{ title }}</h2>
+<table>
+<tr><th>Имя</th><th>Промокод</th><th>Время подписки</th></tr>
+    {% for ptc in ptcs %}
+<tr>
+     <td>{{ ptc.user.first_name }}</td>
+    <td>{{ ptc.promocode }}</td>
+    <td>
+    {% if ptc.subscription_time %}
+    {{ ptc.subscription_time }}
+{% endif %}
+</td>
+</tr>
+{% endfor %}
+</table>

@@ -1,0 +1,263 @@
+{% extends 'discount/base/base.html' %}
+{% load discount_tags %}
+
+{% block content %}
+
+
+
+    <div class="row">
+
+        <div class="col-md-12">
+			<div class="cart">
+
+
+
+{% for product in products %}
+
+
+
+<div id="product-{{ product.pk }}" class="{{ product.get_class }} in-cart product">
+
+    <div class="row wrapper">
+        
+        <div class="col-md-1 col-sm-2 col-xs-3 image-wrapper">
+            <a href="{{ product.get_absolute_url }}"><img class="cart-product-image" src="{{ product.get_main_image.thumb180 }}"></a>
+        </div>
+        
+        <div class="col-md-11 col-sm-10 col-xs-9 desc-wrapper">
+            <div class="row">
+            
+                <div class="col-md-3">
+					
+                    <div class="brand">
+                        {{ product.brand }}
+                    </div>
+					<div class="name">{{ product }}</div>
+                    <div class="price">Цена по акции: {{ product.stock_price }} руб.</div>
+                    <div class="percent">Скидка: {{ product.percent }} %</div>
+
+                </div>
+                <div class="col-md-2 clearfix">
+                    <div class="shop ">
+                        {{ product.shop }}
+                    </div>
+                  
+                </div>
+
+                <div class="col-md-3">
+                    <div class="sizes">
+                        <ul>
+                            {% for size in product.sizes_man.all %}
+                            <li class="size">
+                                {{ size }}
+                            </li>
+                            {% endfor %}
+
+
+                        {% for size in product.sizes_woman.all %}
+                            <li class="size">
+                                {{ color }}
+                            </li>
+                            {% endfor %}
+
+
+                        {% for size in product.sizes_shoes.all %}
+                            <li class="size">
+                                {{ color }}
+                            </li>
+                            {% endfor %}
+
+                         {% for size in product.sizes_childs.all %}
+                            <li class="size">
+                                {{ color }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="colors">
+                        <ul>
+                            {% for color in product.colors.all %}
+                            <li class="color">
+                                {{ color }}
+                            </li>
+                            {% endfor %}
+
+
+
+
+
+                        </ul>
+                    </div>
+                    <div>
+                        {{ product.color }}
+                    </div>
+                </div>
+                <div class="col-md-1 delete-btn-wrapper">
+					{% cart_remove_product product.pk %} 
+                </div>
+				
+				</div></div>
+				
+		<span class="delete-btn-icn"></span>
+  </div>
+
+</div>
+
+{% endfor %}
+
+			</div>
+
+
+
+{% comment %}
+{% if products.count > 0 %}
+{% include 'discount/_pager.html' %}
+{% endif %}
+{% endcomment %}
+{% if products %}
+
+<div class="delete-buttons clearfix">
+  
+	<div class="delete-all">
+		<form method="post" class="" action="{% url 'discount:cart-remove-expired' %}">
+			{% csrf_token %}
+			<input type="submit" value="Удалить завершенные акции">
+		</form>
+	</div>
+	
+	<div class="clear">
+    <form method="post" class="" action="{% url 'discount:cart-clear' %}">
+        {% csrf_token %}
+        <input type="submit" value="Очистить">
+    </form>
+	</div>
+	
+	
+</div>
+
+ {% if user.is_authenticated %}
+{{ get_code_form.non_field_errors.as_text }}
+     
+     <form method="post" action="{% url 'discount:cart-finish' %}"  class="cart-form" id="cart-form">
+{% csrf_token %}
+  
+
+      <div class="item"> {{ get_code_form.first_name.label_tag }}
+          {{ get_code_form.first_name.errors }}
+          {{ get_code_form.first_name }}
+      </div>
+      
+      <div class="item">{{ get_code_form.last_name.label_tag }}
+          {{ get_code_form.last_name.errors }}
+          {{ get_code_form.last_name }}
+      </div>
+      
+      <div class="item"> {{ get_code_form.phone.label_tag }}
+          {{ get_code_form.phone.errors }}
+          {{ get_code_form.phone }}
+      </div>
+
+   
+     
+
+    
+
+    {{ get_code_form.email }}
+<input type="submit" value="Подписаться на акции и получить промокоды">
+</form>
+ {% endif %}
+{% endif %}
+
+      {% include 'discount/widgets/_cart_remove_product_script.html' %}
+{% if products %}
+
+{% if not user.is_authenticated %}
+			<div class="register-to-get" data-icon="&#xe001;">Для получения кодов акций необходимо зарегистрироваться или войти под своей учетной записью.</div>
+<div class="cart-form-links"><a href="#" class='auth-type-switcher active' id="use-new">Зарегистрироваться</a>
+<a href="#" class='auth-type-switcher' id="use-existing">Использовать свою учетную запись</a>
+            </div>
+
+			<form class='cart-form cart-auth-form form hidden' action="{% url 'discount:cart-login' %}" method="post" id="cart-login-form">
+{% include 'discount/user/_cart_login.html' with form=login_form %}
+</form>
+
+			<form class="cart-form cart-auth-form form " action="{% url 'discount:cart-signup' %}" method="post" id="cart-signup-form">
+{% include 'discount/user/_cart_signup.html' with form=signup_form  %}
+</form>
+
+
+{% endif %}
+
+
+<script>
+$(function(){
+    $('#use-existing').on('click', function () {
+        $('#cart-login-form').removeClass('hidden');
+        $('#use-existing').addClass('active');
+        $('#cart-signup-form').addClass('hidden');
+        $('#use-new').removeClass('active');
+        return false;
+    });
+    $('#use-new').on('click', function () {
+        $('#cart-login-form').addClass('hidden');
+        $('#use-existing').removeClass('active');
+        $('#cart-signup-form').removeClass('hidden');
+        $('#use-new').addClass('active');
+        return false;
+    });
+    });
+</script>
+
+<script>
+$(function(){
+    var frm = $('#cart-login-form');
+    frm.on('submit', function (caller) {
+        $.ajax({
+            type: 'post',
+            url: $(caller.currentTarget).attr('action'),
+            data: $(caller.currentTarget).serialize(),
+            success: function (data) {
+                location.href = data.location;
+                //$('#id_first_name').focus();
+            },
+            error: function(data) {
+                $(caller.currentTarget).html(data.responseJSON.html);
+
+            }
+        });
+        return false;
+    });
+});
+</script>
+
+<script>
+$(function(){
+    var frm = $('#cart-signup-form');
+    frm.on('submit', function (caller) {
+        $.ajax({
+            type: 'post',
+            url: $(caller.currentTarget).attr('action'),
+            data: $(caller.currentTarget).serialize(),
+            success: function (data) {
+                location.href = data.location;
+                //$('#id_first_name').focus();
+            },
+            error: function(data) {
+                $(caller.currentTarget).html(data.responseJSON.html);
+
+            }
+        });
+        return false;
+    });
+});
+</script>
+
+{% endif %}
+
+        </div></div>
+
+
+{% endblock content %}
+

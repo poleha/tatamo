@@ -1,0 +1,181 @@
+{% load discount_tags %}
+{% load contact_form_tags %}
+
+<html>
+
+<head>
+    {% block header %} {% include "discount/base/base_header.html" %} {% metatags %}{% endblock header %}
+</head>
+
+
+
+
+<body>
+
+
+    <header>
+
+        <div class="container">
+
+
+            {% block head %}
+
+            <div class="row wrapper">
+               
+				<div class="col-md-4 col-xs-3  left-al"> 
+					
+                  
+				
+                   
+               
+				</div>
+				{% get_top_menu %}
+              
+				<div class="col-md-3 col-xs-6">
+				     <a href="/" class="logo"></a>
+			   </div>
+                  
+                  
+                  
+
+				<div class="col-md-4 col-xs-3 right-al">
+				</div>
+				
+				<div class="user-navigation abs ">
+
+					{% include "discount/user/_user_info_top.html" %}
+
+				</div>
+			
+				<div class="user-links abs">
+
+
+					<div class="cart-link inline-b">
+						{% cart_link %}
+					</div>
+				</div>
+			
+			
+			</div>    
+
+
+            {% endblock head %}
+
+
+        </div>
+
+    </header>
+
+
+    
+    
+    
+
+    <div class="base-div" id="main-menu">
+		<div class="container">
+			<div class="row">
+				<div class="menu col-md-12">
+				
+			
+					{% block main_menu %}
+					
+							{% get_main_top_menu %}  <li class="search-icon" data-icon="&#xe090;"> {% get_product_by_code %}  </li>
+					
+					{% endblock main_menu %}
+				
+				</div>
+			</div>
+		</div>
+   
+    </div>
+
+    <div id="content">
+
+        <div class="container top-page"> <div class="row">
+            <div class="menu col-md-6">
+                <div class="base-div" id="breadcrumbs">
+                    {% block breadcrumbs %} {% breadcrumbs %} {% endblock breadcrumbs %}
+                </div>
+            </div>
+           
+            </div> </div>
+       
+        {% block pre_content %} <div class="container"> <div class="row"> <div class="col-md-12 block"> {% endblock pre_content %}
+        
+        {% block sidebar_left %} 
+        {% endblock sidebar_left %}
+        
+        
+        {% block content %}   
+        
+        {% endblock content %} 
+       
+        
+        {% block sidebar_right %} {% endblock sidebar_right %}
+        
+        
+        {% block post_content %} </div></div></div> {% endblock post_content %}
+        
+        {% recent_products %}
+        {% get_contact_form %}
+
+
+
+
+       
+
+    </div>
+    <!-- content -->
+
+
+
+
+
+    <footer>
+
+        {% block footer %} {% get_bottom_menu %}
+
+        {% main_social_links %}
+
+
+
+        <script>
+            $('form.confirm').click(function (caller) {
+                if (confirm("Click OK to continue?")) {
+                    $(caller.currentTarget).submit();
+                } else {
+                    return false
+                }
+            });
+        </script>
+        {% include 'discount/widgets/_cart_add_product_script.html' %}
+
+        <!--<link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">-->
+        <script src="//code.jquery.com/ui/1.11.2/jquery-ui.js"></script>
+        <script>
+            $(function () {
+                $(".date-input").datepicker({
+                    dateFormat: "dd.mm.yy"
+                });
+            });
+        </script>
+
+
+{% include 'discount/base/_counters.html' %}
+
+        {% endblock footer %}
+    </footer>
+
+	<script>
+		
+	$(function() {
+	$('input[type="number"]').spinner({
+	});
+	});
+
+	</script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,42 @@
+@font-face {
+	font-family: 'MuseoSansCyrl-500';
+	src: url('../fonts/Museo/2E39C5_0_0.eot');
+	src: url('../fonts/Museo/2E39C5_0_0.eot?#iefix') format('embedded-opentype'),
+		url('../fonts/Museo/2E39C5_0_0.woff2') format('woff2'),
+		url('../fonts/Museo/2E39C5_0_0.woff') format('woff'),
+		url('../fonts/Museo/2E39C5_0_0.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'tatamo';
+	src: url('../fonts/Icons/tatamo.eot?99855923');
+	src: url('../fonts/Icons/tatamo.eot?99855923#iefix') format('embedded-opentype'),
+		url('../fonts/Icons/tatamo.woff?99855923') format('woff'),
+		url('../fonts/Icons/tatamo.ttf?99855923') format('truetype'),
+		url('../fonts/Icons/tatamo.svg?99855923#tatamo') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Simple-Line-Icons';
+	src:url('../fonts/Icons/Simple-Line-Icons.eot');
+	src:url('../fonts/Icons/Simple-Line-Icons.eot?#iefix') format('embedded-opentype'),
+		url('../fonts/Icons/Simple-Line-Icons.woff') format('woff'),
+		url('../fonts/Icons/Simple-Line-Icons.ttf') format('truetype'),
+		url('../fonts/Icons/Simple-Line-Icons.svg#Simple-Line-Icons') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'socicon';
+	src: url('../fonts/Social/socicon-webfont.eot');
+	src: url('../fonts/Social/socicon-webfont.eot?#iefix') format('embedded-opentype'),
+		url('../fonts/Social/socicon-webfont.woff') format('woff'),
+		url('../fonts/Social/socicon-webfont.ttf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+}
+
+

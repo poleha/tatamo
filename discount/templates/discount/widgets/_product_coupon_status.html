@@ -1,0 +1,19 @@
+<div class="coupon-status" id="coupon-status-{{ product.pk }}">
+{% if subscribed %}
+
+<div class="status">   
+    <label>Промокод: </label>
+        <div class="code">{{ code }}</div>
+        <div class="coupon-links">
+			<a href="{% url 'discount:product-pdf-view' product.pk %}"><span>Открыть купон в формате PDF</span></a>
+			<a href="{% url 'discount:coupon-view' product.pk %}"><span>Открыть купон</span></a>
+        </div>
+</div>
+
+
+    {% elif show_bought %}
+    <div class="status">
+    Вы приобрели товар по этой акции
+	</div>
+{% endif %}
+</div>

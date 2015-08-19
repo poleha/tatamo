@@ -1,0 +1,161 @@
+{% extends 'discount/base/base.html' %}
+
+{% load discount_tags %}
+
+
+{% block content %}
+
+<div class="item">
+	<label>Статус заявки:</label>{{ changer.status_text }}
+</div>
+
+<form class="form product-change" id="product-change-form" enctype="multipart/form-data" method="post">
+
+  {% csrf_token %}
+   
+	<div class="item"> {{ changer.title }} </div>
+
+
+
+ 	<div class="item">
+	{{ form.brand.label_tag }}
+		<div class="field inline-b  wrapper">
+	<div class="select-border inline-b"><div class="select-outer">
+    {{ form.brand }}
+	</div><a class="select-btn"></a></div>
+	{{ form.brand.errors }}
+		</div></div>
+
+
+    <div class="item" id="category-item">
+    {{ form.category.label_tag }}
+	<div class="field inline-b  wrapper">
+	<div class="select-border inline-b"><div class="select-outer">
+    {{ form.category }}
+	</div><a class="select-btn"></a></div>
+	{{ form.category.errors }}
+	</div></div>
+
+
+	<div class="item" id="product-type-item">
+    {{ form.product_type.label_tag }}
+	<div class="field inline-b  wrapper">
+	<div class="select-border inline-b"><div class="select-outer">
+        <div id="product-type-field">
+    {{ form.product_type }}
+            </div>
+	</div><a class="select-btn"></a></div>
+	{{ form.product_type.errors }}
+	</div>
+    </div>
+
+
+		<div class="item">
+     {{ form.link.label_tag }}
+			<div class="field inline-b  wrapper">
+    {{ form.link }}
+			{{ form.link.errors }}
+			</div></div>
+
+
+    	<div class="item">
+    {{ form.title.label_tag }}
+		<div class="field inline-b  wrapper">
+    {{ form.title }}
+	{{ form.title.errors }}
+		</div></div>
+
+	<div class="item">
+    {{ form.normal_price.label_tag }}
+		<div class="field inline-b  wrapper">
+    {{ form.normal_price }}
+	{{ form.normal_price.errors }}
+		</div></div>
+
+
+<div class="item">
+    {{ form.stock_price.label_tag }}
+		<div class="field inline-b  wrapper">
+    {{ form.stock_price }}
+	{{ form.stock_price.errors }}
+		</div></div>
+
+    <div class="item bl item-body">
+    {{ form.body.label_tag }}
+
+    <div class="field-body inline-b-t">
+    {{ form.body }}
+	{{ form.body.errors }}
+	</div>
+		</div>
+
+	<div class="item">
+    {{ form.product_shop_code.label_tag }}
+		<div class="field inline-b  wrapper">
+    {{ form.product_shop_code }}
+	{{ form.product_shop_code.errors }}
+		</div></div>
+
+
+
+
+		<div class="item">
+     {{ form.compound.label_tag }}
+			<div class="field inline-b  wrapper">
+    {{ form.compound }}
+			{{ form.compound.errors }}
+			</div></div>
+
+	<div class="item">
+    {{ form.shop_comment.label_tag }}
+		<div class="field inline-b  wrapper">
+    {{ form.shop_comment }}
+	{{ form.shop_comment.errors }}
+		</div></div>
+
+   <div class="item">
+    {{ form.tatamo_comment.label_tag }}
+	   <div class="field inline-b  wrapper">
+    {{ form.tatamo_comment }}
+	{{ form.tatamo_comment.errors }}
+	   </div></div>
+
+<div id="action-conditions">
+{{ condition_formset.management_form }}
+{{ condition_formset.non_form_errors }}
+{% for form in condition_formset.forms %}
+    <div class="action-condition">
+    {{ form.condition.label_tag }}
+    {{ form.condition }}
+	{{ form.condition.errors }}
+{{ form.id }}
+{{ form.product }}
+   </div>
+{% endfor %}
+</div>
+
+{{ image_formset.management_form }}
+{{ image_formset.non_form_errors }}
+{% for form in image_formset.forms %}
+    <div class="image-table-content inline-b wrapper">
+    {{ form.image }}
+	{{ form.image.errors }}
+    {{ form.DELETE.label }}
+        {{ form.DELETE }}
+{{ form.id }}
+{{ form.product }}
+   </div>
+{% endfor %}
+
+
+
+
+ {% if send_button_available %}
+<input type="submit" value="Отправить на согласование" name="confirm">
+<input type="submit" value="Удалить заявку" name="delete">
+{% endif %}
+</form>
+      {% include "discount/product/_product_create_change_sctipt.html" %}
+{% endblock content %}
+
+

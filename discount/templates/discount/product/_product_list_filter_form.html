@@ -1,0 +1,134 @@
+{% comment %}
+{{ product_list_filter_form.as_p }}
+{% endcomment %}
+    
+<div class="form-label">
+    {{ product_list_filter_form.title.label_tag }}
+    {{ product_list_filter_form.title.errors }}
+</div>
+<div class="form-item">    
+    {{ product_list_filter_form.title }}
+</div>
+ 
+<div class="form-label"> 
+    {{ product_list_filter_form.shop.label_tag }}
+</div>
+<div class="form-item scroll">  
+    {{ product_list_filter_form.shop.errors }}
+    {{ product_list_filter_form.shop }}
+</div>
+
+<div class="form-label">
+    {{ product_list_filter_form.product_type.label_tag }}
+</div>
+<div class="form-item">  
+   {{ product_list_filter_form.product_type.errors }}
+    {{ product_list_filter_form.product_type }}
+</div>
+
+<div class="form-label">
+    {{ product_list_filter_form.brand.label_tag }}
+</div>
+<div class="form-item scroll">       
+    {{ product_list_filter_form.brand.errors }}
+    {{ product_list_filter_form.brand }}
+</div>
+
+
+{% if product_list_filter_form.colors %}
+<div class="form-label">
+    {{ product_list_filter_form.colors.label_tag }}
+</div>
+<div class="form-item">
+    {{ product_list_filter_form.colors.errors }}
+    {{ product_list_filter_form.colors }}
+</div>
+{% endif %}
+
+{% if product_list_filter_form.sizes_man %}
+<div class="form-label">
+    {{ product_list_filter_form.sizes_man.label_tag }}
+</div>
+<div class="form-item sizes">      
+    {{ product_list_filter_form.sizes_man.errors }}
+    {{ product_list_filter_form.sizes_man }}
+</div>
+{% endif %}
+
+
+{% if product_list_filter_form.sizes_woman %}
+<div class="form-label">
+    {{ product_list_filter_form.sizes_woman.label_tag }}
+</div>
+<div class="form-item sizes">
+    {{ product_list_filter_form.sizes_woman.errors }}
+    {{ product_list_filter_form.sizes_woman }}
+</div>
+{% endif %}
+
+
+{% if product_list_filter_form.sizes_shoes %}
+<div class="form-label">
+    {{ product_list_filter_form.sizes_shoes.label_tag }}
+</div>
+<div class="form-item sizes">
+    {{ product_list_filter_form.sizes_shoes.errors }}
+    {{ product_list_filter_form.sizes_shoes }}
+</div>
+{% endif %}
+
+
+{% if product_list_filter_form.sizes_childs %}
+<div class="form-label">
+    {{ product_list_filter_form.sizes_childs.label_tag }}
+</div>
+<div class="form-item sizes">
+    {{ product_list_filter_form.sizes_childs.errors }}
+    {{ product_list_filter_form.sizes_childs }}
+</div>
+{% endif %}
+
+
+
+
+<div class="form-label">
+    {{ product_list_filter_form.status.label_tag }}
+</div>
+<div class="form-item">      
+    {{ product_list_filter_form.status.errors }}
+    {{ product_list_filter_form.status }}
+</div>
+   
+<div class="form-label">
+    {{ product_list_filter_form.discount_category.label_tag }}
+</div>
+<div class="form-item">     
+    {{ product_list_filter_form.discount_category.errors }}
+    {{ product_list_filter_form.discount_category }}
+</div>
+
+    <div class="form-label">
+    {{ product_list_filter_form.price_category.label_tag }}
+</div>
+<div class="form-item">     
+    {{ product_list_filter_form.price_category.errors }}
+    {{ product_list_filter_form.price_category }}
+</div>
+
+
+
+<div class="form-item hidden">
+    {{ product_list_filter_form.order_by }}
+    {{ product_list_filter_form.order_by_select }}
+    {{ product_list_filter_form.show_type }}
+    {{ product_list_filter_form.sender }}
+</div>
+
+
+
+
+<div class="cl hidden">
+<input type="submit" value="Показать" id="product-list-filter-submit" action="{{ form_action_url }}" >
+</div>
+
+{% include 'discount/product/_product_list_filter_form_script.html' %}

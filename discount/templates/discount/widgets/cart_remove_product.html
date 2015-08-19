@@ -1,0 +1,10 @@
+<div>
+<form class="remove-product-from-cart-form" method="post" action='{% url 'discount:cart-remove-from-cart' %}'>
+{% csrf_token %}
+{{ form }}
+<input type="submit" value="">
+</form>
+<div id="remove-product-from-cart-form-errors"></div>
+</div>
+
+

@@ -1,0 +1,424 @@
+{% extends 'discount/base/base.html' %}
+{% load discount_tags %}
+{% load staticfiles %}
+{% block header %}
+{{ block.super }}
+<link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/themes/smoothness/jquery-ui.css" />
+{% endblock header %}
+
+
+
+{% block content %}
+
+{% if not form.instance.pk %}
+<div><a href="{% static "discount/load_products.xls" %}">Скачать шаблон для загрузки акций</a></div>
+<div class="prompt inline-b">Заполненные шаблоны, а также вопросы по заполнению, просим присылать на admin@tatamo.ru</div>
+{% endif %}
+
+{{ form.non_field_errors.as_text }}
+{{ form.non_form_errors }}
+
+    <form method="post" enctype="multipart/form-data" id="product-create-form" class="form product-create-form">
+<div id="form-non-field-errors"></div>
+
+<div>
+
+
+{% if shop.is_published and shop.brands.all.count == 0 %}
+<span class="errorlist"> Пожалуйста, добавьте для магазина хотя бы один бренд. Без этого создание акции невозможно.</span>
+<div><a href="{{ shop_manage_url }}#id_add_brands">Добавить бренды</a> </div>
+{% endif %}
+
+{% if shop.is_project %}
+<span class="errorlist">Пожалуйста, отправьте данные о магазине на проверку менеджером Tatamo, прежде чем создавать акцию.</span>
+<div><a href="{{ shop_manage_url }}#to-approve">Отправить данные о магазине на согласование</a> </div>
+{% endif %}
+
+{% if shop.on_approve %}
+<span class="errorlist">Пожалуйста, дождитесь проверки данных о магазине менеджером Tatamo, прежде чем создавать акцию.</span>
+{% endif %}
+
+{% if shop.need_rework %}
+<span class="errorlist">Исправьте данные о магазине о отправьте их повторно на согласование.</span>
+<div><a href="{{ shop_manage_url }}#to-approve">Отправить данные о магазине на согласование</a> </div>
+{% endif %}
+
+
+</div>
+
+
+
+        {% if status_text %}
+		<div class="item string" id="status-text-item">
+		<label>Статус</label>
+			<div class="field inline-b">{{ status_text }}</div>
+		</div>
+		{% endif %}
+		{% csrf_token %}
+
+
+
+        {{ form.media }}
+	<div class="item">
+    {{ form.normal_price.label_tag }}
+		<div class="field inline-b  wrapper">
+    {{ form.normal_price }}
+	{{ form.normal_price.errors }}
+		</div></div>
+	
+<div class="prompt inline-b">Пожалуйста, обратите внимание, что цена по акции должна быть ниже, чем цена в Вашем магазине/на сайте.</div>
+	<div class="item">
+
+        {{ form.stock_price.label_tag }}
+        <div class="field inline-b  wrapper">
+    {{ form.stock_price }}
+	{{ form.stock_price.errors }}
+		</div></div>
+
+
+
+    <div class="item" id="category-item">
+    {{ form.category.label_tag }}
+	<div class="field inline-b  wrapper">
+	<div class="select-border inline-b"><div class="select-outer">
+    {{ form.category }}
+	</div><a class="select-btn"></a></div>
+	{{ form.category.errors }}
+	</div></div>
+
+
+	<div class="item" id="product-type-item">
+    {{ form.product_type.label_tag }}
+	<div class="field inline-b  wrapper">
+	<div class="select-border inline-b"><div class="select-outer">
+     <div id="product-type-field">
+    {{ form.product_type }}
+     </div>
+	</div><a class="select-btn"></a></div>
+	{{ form.product_type.errors }}
+	</div>
+    </div>
+	
+	<div class="item">
+   
+    {{ form.start_date.label_tag }}
+		<div class="field inline-b  wrapper">
+    {{ form.start_date }}
+	{{ form.start_date.errors }}
+	</div></div>
+
+    		<div class="item">
+    {{ form.end_date.label_tag }}
+			<div class="field inline-b  wrapper">
+	{{ form.end_date }}
+    {{ form.end_date.errors }}
+			</div></div>
+
+	<div class="item">
+		{{ form.brand.label_tag }}
+		<div class="field inline-b  wrapper">
+			<div class="select-border inline-b">
+				<div class="select-outer">	{{ form.brand }}</div>
+				<a class="select-btn"></a>
+			</div>
+		</div>
+		{{ form.brand.errors }}
+	</div>
+
+    {% if not form.instance.use_simple_code %}
+    <div class="item" id="code-block">
+
+    {% else %}
+    <div class="item hidden" id="code-block">
+    {% endif %}
+
+    {{ form.code.label_tag }}
+		<div class="field inline-b  wrapper">
+    {{ form.code }}
+	{{ form.code.errors }}
+	<input id="id_code_hidden" type="hidden" name="code" maxlength="200">
+	
+	{% if display_generate_code_button %}
+	<input type="button" value="Сгенерировать код заново" id="generate-product-code-button">
+	{% endif %}
+		</div></div>
+
+
+
+
+     <div class="item">
+    {{ form.use_simple_code.label_tag }}
+	   <div class="field inline-b  wrapper">
+    {{ form.use_simple_code }}
+	{{ form.use_simple_code.errors }}
+	   </div></div>
+
+     <div class="item">
+    {{ form.use_code_postfix.label_tag }}
+	   <div class="field inline-b  wrapper">
+    {{ form.use_code_postfix }}
+	{{ form.use_code_postfix.errors }}
+	   </div></div>
+
+
+    {% if form.instance.use_simple_code %}
+    <div class="item" id="simple-code-block">
+    {% else %}
+    <div class="item hidden" id="simple-code-block">
+
+    {% endif %}
+
+    {{ form.simple_code.label_tag }}
+		<div class="field inline-b  wrapper">
+    {{ form.simple_code }}
+	{{ form.simple_code.errors }}
+
+
+
+		</div></div>
+
+
+
+
+
+        <div class="item">
+    {{ form.link.label_tag }}
+		<div class="field inline-b  wrapper">
+    {{ form.link }}
+	{{ form.link.errors }}
+		</div></div>
+
+
+    <div class="item">
+    {{ form.title.label_tag }}
+		<div class="field inline-b  wrapper">
+    {{ form.title }}
+	{{ form.title.errors }}
+		</div>
+	</div>
+
+
+    <div class="item bl item-body">
+    {{ form.body.label_tag }}
+		
+    <div class="field-body inline-b-t">
+    {{ form.body }}
+	{{ form.body.errors }}
+	</div>
+		</div>
+
+
+
+
+
+	<div class="item">
+    {{ form.product_shop_code.label_tag }}
+		<div class="field inline-b  wrapper">
+    {{ form.product_shop_code }}
+	{{ form.product_shop_code.errors }}
+		</div></div>
+
+  
+
+
+		<div class="item">
+     {{ form.compound.label_tag }}
+			<div class="field inline-b  wrapper">
+    {{ form.compound }}
+			{{ form.compound.errors }}
+			</div></div>
+
+{% for field_name in form.filter_fields %}
+   {% with field=form|get_item:field_name %}
+
+     <div id="{{ field_name }}-block">
+	<div class="item bl">
+    {{ field|label_with_classes:'required' }}
+		
+	{{ field }}
+    {{ field.errors }}
+		</div>
+   </div>
+{% endwith %}
+
+
+  {% endfor %}
+{%  if form.shop_comment %}
+
+<div class="prompt inline-b">Этот комментарий будет виден только Вам и менеджеру Татамо.</div>
+	<div class="item">
+        {{ form.shop_comment.label_tag }}
+		<div class="field inline-b  wrapper">
+    {{ form.shop_comment }}
+	{{ form.shop_comment.errors }}
+		</div></div>
+{% endif %}
+
+   <div class="item">
+    {{ form.tatamo_comment.label_tag }}
+	   <div class="field inline-b  wrapper">
+    {{ form.tatamo_comment }}
+	{{ form.tatamo_comment.errors }}
+	   </div></div>
+
+
+<h2>Дополнительные условия акции</h2>
+<div class="prompt inline-b">Например: "Промокод действует только по средам и пятницам" или "Промокод не действует в интернет-магазине"</div>
+
+<div id="action-conditions">
+    {{ condition_formset.management_form }}
+    {{ condition_formset.non_form_errors }}
+    {% for form in condition_formset %}
+    <div class="action-condition">
+    {{ form.condition.label_tag }}
+    {{ form.condition.errors }}
+    {{ form.condition }}
+    {{ form.id }}
+    {{ form.product }}
+    </div>
+    {% endfor %}
+
+
+<h2>Связанные акции</h2>
+
+<div id="related-actions">
+    {{ related_product_formset.management_form }}
+    {{ related_product_formset.non_form_errors }}
+    {% for form in related_product_formset %}
+    <div class="related-action">
+    {{ form.related_product.label_tag }}
+    {{ form.related_product.errors }}
+    {{ form.related_product }}
+    {{ form.id }}
+    {{ form.product }}
+    </div>
+    {% endfor %}
+
+
+
+</div>
+<div class="prompt inline-b">Если этот флаг не установлен, то после согласования акции Вам будет необходимо начать или запланировать ее вручную</div>
+    <div class="item">
+    {{ form.start_after_approve.label_tag }}
+	   <div class="field inline-b  wrapper">
+    {{ form.start_after_approve }}
+	{{ form.start_after_approve.errors }}
+	   </div></div>
+
+{{ form.shop|field_with_classes:'hidden' }}
+{{ form.hashed }}
+	{% comment %}
+	 {% for field in form %}
+	<div>
+		{{ field.label }}
+		{{ field }}
+	</div>
+	{% endfor %}
+	{% endcomment %}
+
+
+
+<div id="image-formset">
+
+<label>Изображение:</label><div class="prompt inline-b">Размер изображения должен быть 1080x1440 точек.</div>
+<div class="prompt inline-b">Порядок показа изображений можно менять "Перетаскиванием".</div>
+{{ image_formset.management_form }}
+{{ image_formset.non_form_errors }}
+<ul id="sortable">
+{% for form in image_formset.forms %}
+ <li class="ui-state-default">
+    
+ <div class='images-table clearfix' id="single-image-{{ form.prefix }}">
+<table class='no_error'>
+    
+	
+    <div class="image-table-content inline-b wrapper">
+    {{ form.image }}
+	{{ form.image.errors }}
+   
+    </div>
+   {% comment %}
+	<div class="image-title inline-b">
+{{ form.title.label_tag }}
+		{{ form.title }}
+    {{ form.title.errors }}
+    
+	</div>
+{% endcomment %}
+<div class="order-image-input inline-b hidden">
+
+    {{ form.weight|field_with_classes:'image-order-input' }}
+    </div>
+
+{{ form.DELETE|field_with_classes:'hidden' }}
+{{ form.id }}
+{{ form.product }}
+
+{% if display_add_image_button %}
+
+<span class="delete-btn"> <input type="button" value="" class="delete-image-button"> <a class="delete-btn-icn"></a></span>
+
+{% endif %}
+
+</table>
+</div>
+
+</li>
+{% endfor %}
+</ul>
+   
+    {% if display_add_image_button %}
+    
+    <div class="add-img-btn">
+    <input type="button" id='images_formset_add_field' value="Добавить еще изображение">
+     </div>
+{% endif %}
+
+    {% for name, title in buttons %}
+<input type="submit" id= "{{ name }}" name="{{ name }}" value="{{ title }}" class="submit-with-type">
+    {% endfor %}
+   
+
+<input type="hidden" id='submit-type' name="submit-type" value="">
+
+{% comment %}
+{% if display_to_project_button %}
+    <input type="submit" id="to-project" name="to-project" value="Вернуть в статус Проект">
+
+{% endif %}
+
+{% if display_start_button %}
+	<input type="submit" id="to-start" class="white" name="to-start" value="Начать акцию">
+
+{% endif %}
+
+{% endcomment %}
+
+{% if form.instance.to_pay_in_day  %}
+<div id="to-pay-warning">При старте со счета будет списано {{ form.instance.to_pay_in_day }} за размещение на главной странице!</div>
+{% endif %}
+
+
+
+
+
+</div>
+</form>
+
+
+
+
+{% if display_generate_code_button %}
+<form id="generate-product-code-form" method="post" action="{% url 'discount:generate-product-code' %}">
+{% csrf_token %}
+
+</form>
+{% endif %}
+  {% include "discount/product/_product_create_change_sctipt.html" %}
+ {% include "discount/product/_create_product_script.html" %}
+
+
+
+
+
+{% endblock content %}

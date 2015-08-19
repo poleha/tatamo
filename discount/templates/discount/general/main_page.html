@@ -1,0 +1,146 @@
+{% extends 'discount/base/base.html' %}
+{% load discount_tags %}
+{% load staticfiles %}
+{% load cache %}
+
+
+
+{% block pre_content %}{% endblock pre_content %}
+
+{% block content %}
+
+<a href="https://vk.com/tatamoru?w=wall-17193793_434" id="top-banner">
+</a>
+<div id="popular" class="block clearfix"><div class="container"><div class="row">
+    <div class="popular item-list col-md-12">
+        
+        
+
+        <div class="row">
+
+            {% for product in favourite_products %}
+{% cache 2419200 main_page_product_1 product.pk %}
+
+                    <div class="item col-md-4 col-sm-4 col-xs-4">   
+                        <div class="wrapper clearfix">
+
+                            {% if not product.ad %}
+							<a class="product" href="{{ product.get_absolute_url }}">
+                                {% endif %}
+							
+							<div class="product-image">
+
+								<img src="{{ product.banner.thumb360 }}">
+								
+							</div>    
+                                
+                                                              
+						{% if not product.ad %}
+								
+								<div class="description clearfix">
+									<div class="brand">{{ product.brand }}</div>
+									<div class="name">{{ product }}</div>
+									
+									<div class="price">
+										<span class="normal-price">{{ product.normal_price }} руб</span>
+										<span class="current-price">{{ product.stock_price }} руб </span>
+											<span class="percent percent-l">-{{ product.percent }}%</span> 
+									</div>
+
+									
+								</div>
+
+							</a>
+                        {% endif %}
+                  		</div>
+                  </div>
+
+{% endcache %}
+            {% endfor %}
+
+        </div>
+    
+    </div>
+    
+</div></div></div>
+
+
+
+
+   
+    {% for category in categories %}
+        {% if category.available_products_count > 0 %}
+        <div class="category-main block clearfix">
+            <div class="item-list container">    
+                <div class="row">
+                    <div class="col-md-12">
+                    
+						<div class="title">
+						<h1>{{ category }}</h1>
+						<hr></hr>
+						<div class="all-link"><a href="{{ category.get_absolute_url }}">смотреть все</a></div>
+						</div>
+				
+                        <div class="row">
+                        
+        {% for product in category.get_products_for_main_page %}
+        {% product_info_main product %}
+        {% endfor %}
+                        </div></div>
+                </div> </div> </div>
+       {% endif %}
+    {% endfor %}
+
+
+
+<script src="{% static "discount/js/flexslider/jquery.flexslider-min.js"  %}"></script>
+<link href="{% static "discount/js/flexslider/flexslider.css" %}" rel="stylesheet">
+
+<div id="shops" class="block">
+    <div class="container">
+        <div class="row">
+
+            <div class="col-md-12">
+               
+               
+				<div class="title"><h1><a href="{% url 'discount:shop-list' %}">Магазины-партнеры</a></h1></div>
+                
+                <div class="shops">   
+
+                        <div id="main-shop-slider" class="main-shop-flexslider">
+<ul class="slides">
+{% for shop in partners %}
+
+                            <li><div class="item"> <a href="{{ shop.get_absolute_url }}">
+                                <img src="{{ shop.image.thumb100 }}"></a> </div></li>
+
+{% endfor %}
+  </ul>
+                        </div>
+
+                        
+                        </div>    
+            
+            
+
+</div></div></div></div>
+
+
+<script>
+$(function() {
+  $('.main-shop-flexslider').flexslider({
+    animation: "slide",
+    animationLoop: true,
+    itemWidth: 140,
+    itemMargin: 0,
+    maxItems: 6
+
+  });
+});
+</script>
+
+
+{% endblock content %}
+
+
+{% block post_content %}{% endblock post_content %}

@@ -1,0 +1,23 @@
+{% load discount_tags %}
+{% with filter_param_names=product.get_all_filter_params %}
+                            {% for param_name, param_label in filter_param_names %}
+                            {%  with param_values=product|get_attr:param_name %}
+                             {% if param_values %}
+                            <div class="item">
+                                <span class="label">{{ param_label }}:</span>
+                             {% for param_value in param_values %}
+
+                                <div class="list inline-b">
+
+                                    {{ param_value }}
+
+                                </div>
+
+                                {% endfor %}
+                             </div>
+                             {% endif %}
+                                {% endwith %}
+
+
+                            {% endfor %}
+                            {% endwith %}

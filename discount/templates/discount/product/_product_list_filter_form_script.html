@@ -1,0 +1,309 @@
+{% load staticfiles %}
+<script src='{% static "discount/js/history.js/scripts/bundled/html4+html5/jquery.history.js" %}'></script>
+<script>
+    $(function() {
+
+
+        var frm = $('#product_list_filter_form');
+        var rendered_data = null;
+        var url_data = frm.serialize();
+        var response = null;
+        var first_render = true;
+        var state = 0;
+        var timer;
+//0 - исходное состояние
+//1 - идет запрос
+//2  - запрос готов
+//3 - идет отрисовка
+        $('#product_list_filter_form input, #product_list_filter_form select').on('change', function(e){
+            //rendered_data = url_data;
+
+            var name = null;
+            if(e != null){
+            var elem = $(e.currentTarget);
+            var name = elem.attr('name');
+            $('#id_sender').val(name);
+
+            }
+
+            if (name == 'order_by'){
+            $('#id_order_by_select').val(0);
+            $('#id_order_sep').val(0);
+            }
+            else if (name == 'order_by_select'){
+            var inputs = $('#id_order_by').find('input');
+            for (var key = 0; key < inputs.length; key++){
+            $(inputs[key]).prop('checked', false);
+            }
+               var elems = $('.order-by');
+            for (var key = 0; key < elems.length; key++){
+            $(elems[key]).removeClass('active');
+            }
+
+            }
+
+
+
+
+            url_data = frm.serialize();
+
+
+
+            var title = $(document).find("title").text();
+            History.pushState(null, title, window.location.pathname + "?"  + url_data);
+            repeat();
+
+        first_render = false;
+        });
+
+
+        var change_pager = function(params){
+            var elems = $(".pager_link");
+            elems.each(function(key, value){
+                var params_with_page = '?' + params + '&page=' + $(this).context.innerHTML;
+                $(this).attr('href', params_with_page);
+                //alert($(this).attr('href'));
+            });
+        }
+
+        var repeat = function() {
+            if(!timer) timer = window.setInterval(repeat, 700);
+            if (rendered_data != url_data && state == 0) {
+                state = 1;
+
+
+                $.ajax({
+                    type: 'POST',//$(frm).attr('method'),
+                    url: '{{ left_menu_submit_url }}',
+                    data: url_data,
+                    success: function (data) {
+                        rendered_data = data.url_data;
+                        response = data;
+                        state = 2;
+                    },
+                    error: function (data) {
+                        response = null;
+                        state = 0;
+                        rendered_data = null;
+                        //$("#test-result").html("Ошибка при отправке формы");
+                    }
+                });
+
+
+
+            }
+            if (state == 2) {
+                if (url_data == rendered_data) {
+                    state = 3;
+                    changer_worker(response);
+                    change_pager(rendered_data);
+                    state = 0;
+                    response = null;
+                    window.clearInterval(timer);
+                    timer = null;
+                }
+                else {
+                    state = 0;
+                    response = null;
+                    rendered_data = null;
+                }
+            }
+
+        }
+
+
+        var changer_worker = function(data){
+            if(first_render == false){
+                if($('#main-content').html() != ''){
+                $('#main-content').html('').fadeTo(300, 0);
+                 }
+                if(data.amount > 0){
+                $('#main-content').html(data.html).fadeTo(300, 1);
+                }
+            }
+            $('#product-list-filter-main-submit').val('Показать(' + data['amount'] + ')');
+            for (prop in data) {
+                //for (val in data[prop])
+                //input = $('input[name=' + prop + '][value=' + val + ']')
+                var inputs = $('input[name=' + prop + ']')
+                for (var i = 0; i < inputs.length; i++) {
+                    var enabled_array_as_string = data[prop].map(String);
+                    if (enabled_array_as_string.indexOf(inputs[i].value) >= 0) {
+                        $(inputs[i]).removeClass('disabled')
+                        $(inputs[i]).parent().removeClass('disabled')
+                    }
+                    else {
+                        $(inputs[i]).addClass('disabled')
+                        $(inputs[i]).parent().addClass('disabled')
+                    }
+                }
+            }
+
+
+        }
+
+
+
+
+           $('.show-type').click(function (e) {
+        showTypeChanger(e);
+        });
+
+        function showTypeChanger(e) {
+            if (e != null) {
+          var elem = $(e.currentTarget);
+            var name = elem.attr('name');
+            if(name == 'show-type-list'){
+                var selector = '#id_show_type_0';
+                $('#show-type-list').addClass('active');
+                $('#show-type-grid').removeClass('active');
+                }
+            else if(name == 'show-type-grid'){
+                var selector = '#id_show_type_1';
+                $('#show-type-list').removeClass('active');
+                $('#show-type-grid').addClass('active');
+                }
+            $( selector ).prop('checked', true);
+            $( selector ).trigger( "change" );
+
+            e.preventDefault();
+            }
+            else{
+             var data = frm.serializeArray();
+             var value = 0;
+             data.forEach(function(elem){
+                 if(elem.name == 'show_type') value = elem.value;
+             });
+
+                if(value == 0){
+            $('#show-type-list').removeClass('active');
+            $('#show-type-grid').addClass('active');
+             }
+             else{
+               $('#show-type-list').addClass('active');
+            $('#show-type-grid').removeClass('active');
+             }
+            }
+        }
+
+
+        $('.order-by').click(function (e) {
+            var elem = $(e.currentTarget);
+            var name = elem.attr('name');
+            var cls = elem.attr('class');
+
+            if(name=='order-by-price') {
+                stateChanger(elem, '#id_order_by_1', '#id_order_by_2');
+            }
+
+            if(name=='order-by-discount'){
+           stateChanger(elem, '#id_order_by_3', '#id_order_by_4');
+            }
+           if(name=='order-by-popularity'){
+           stateChanger(elem, '#id_order_by_5', '#id_order_by_6');
+            }
+           if(name=='order-by-new'){
+           stateChanger(elem, '#id_order_by_7', '#id_order_by_8');
+            }
+
+            e.preventDefault();
+        });
+
+var stateChanger = function(elem, selector_inc, selector_dec){
+$('.order-by').removeClass('active');
+elem.addClass('active');
+    if (elem.hasClass('inc')){
+var state = 'inc'
+}
+else{
+var state = 'dec'
+    }
+
+
+if(state=='inc'){
+$(selector_inc).prop('checked', true);
+elem.removeClass('inc');
+elem.addClass('dec');
+$( selector_inc ).trigger( "change" );
+}
+else if(state=='dec'){
+$(selector_dec).prop('checked', true);
+elem.removeClass('dec');
+elem.addClass('inc');
+$( selector_dec ).trigger( "change" );
+}
+}
+
+function setDefaultOrderState(){
+var data = frm.serializeArray();
+             var value = 0;
+             data.forEach(function(elem){
+                 if((elem.name == 'order_by' || elem.name == 'order_by_select') && elem.value > 0) value = elem.value;
+
+             });
+
+
+
+
+    if (value == 1 ){
+     $('#order-by-price').addClass('active');
+     $('#order-by-price').addClass('inc');
+
+
+    }
+    else if (value == 2 ){
+     $('#order-by-price').addClass('active');
+     $('#order-by-price').addClass('dec');
+
+    }
+       else if (value == 3 ){
+     $('#order-by-discount').addClass('active');
+     $('#order-by-discount').addClass('inc');
+
+    }
+       else if (value == 4 ){
+ $('#order-by-discount').addClass('active');
+     $('#order-by-discount').addClass('dec');
+    }
+       else if (value == 5 ){
+     $('#order-by-popularity').addClass('active');
+     $('#order-by-popularity').addClass('inc');
+
+    }
+       else if (value == 6 ){
+   $('#order-by-popularity').addClass('active');
+     $('#order-by-popularity').addClass('dec');
+
+    }
+       else if (value == 7 ){
+     $('#order-by-new').addClass('active');
+     $('#order-by-new').addClass('inc');
+
+    }
+       else if (value == 8 ){
+     $('#order-by-new').addClass('active');
+     $('#order-by-new').addClass('dec');
+
+    }
+$('#id_order_sep').val(value);
+
+}
+
+
+$('#id_order_sep').change(function(e){
+    var valueToSet = $('#id_order_sep').val();
+$('#id_order_by_select').val(valueToSet);
+setDefaultOrderState();
+    $('#id_order_by_select').trigger('change');
+
+});
+
+
+repeat();
+showTypeChanger();
+setDefaultOrderState();
+    });
+
+</script>
+
+

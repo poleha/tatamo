@@ -1,0 +1,88 @@
+
+<ul class="inline-b menu-links">
+	<li class="menu-opener"><span class="menu-opener-inner"></span></li>
+	<ul class="inline-b main-menu">
+        <ul class="level1">
+        {% for parent, childs in full_menu.items %}
+                <li class="menu-item-level-1" id="{{ parent.id }}">
+                <a href="{{ parent.href }}">{{ parent.title }}</a>
+
+
+                <ul class="level2">
+                {% for child, childs2 in childs.items %}
+                <li class="menu-item-level-2" id="{{ child.id }}">
+                <a href="{{ child.href }}">{{ child.title }}</a>
+
+                {% if childs2 %}
+                    <ul class="level3">
+                {% for child2 in childs2 %}
+                <li class="menu-item-level-3 " id="{{ child2.id }}">
+                <a href="{{ child2.href }}">{{ child2.title }}</a>
+                </li>
+                {% endfor %}
+                </ul>
+                {% endif %}
+                 </li>
+                {% endfor %}
+                </ul>
+
+
+                </li>
+                {% endfor %}
+	</ul>
+	</ul>
+			
+
+
+
+
+
+
+	<script>
+		$(function() {
+			
+			
+			if ('.main-menu') {
+			$('.menu-opener').click(function () {
+					$('.main-menu').toggleClass('shown');
+					$(this).toggleClass('active');
+				});
+            }
+
+//Находить только active и сделать универсально. Просто все active удаляем, а текущему даем,
+//Класс элементов уровня 0 не трогаем.
+//Забираем класс у всех элементов текущего уровня
+//Забираем класс у всех элементов нижнего уровня
+
+
+       $(".menu-links a").hover(function(e){
+
+           var elem = $(this).closest('li');
+           var group = elem.closest('ul');
+           var elemId = elem.attr('id');
+           var elemCls = group.attr('class');
+
+           if (elemCls == 'level1') {
+           var firstChild = elem.find('.level2 > li').first();
+           var firstChildId = firstChild.attr('id');
+           $('.level2').find('li.active:not(#'+ firstChildId +')').removeClass('active');
+               firstChild.addClass('active');
+
+           }
+            else if (elemCls == 'level2'){
+            $('.level2').find('li.active:not(#'+ elemId +')').removeClass('active');
+            elem.addClass('active');
+            }
+           else if(elemCls == 'level3'){
+            var parent = elem.parent().closest('li');
+            var parentId = parent.attr('id');
+            $('.level2').find('li.active:not(#'+ elemId +', #' + parentId + ')').removeClass('active');
+            elem.addClass('active');
+            }
+
+            });
+			});
+
+			
+
+	</script>

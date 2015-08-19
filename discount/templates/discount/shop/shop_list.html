@@ -1,0 +1,85 @@
+{% extends 'discount/base/base.html' %}
+{% load discount_tags %}
+
+
+{% block content %}
+
+<div class="shop-list">
+
+{% for shop in shops %}
+
+
+<div class="row"><div class="col-md-12">
+	<div class="shop-info">
+		<div class="row">
+			<div class="col-md-3 col-sm-4 image-wrapper">
+				<a href='{{ shop.get_absolute_url }}'>
+					<img src="{{ shop.image.thumb100 }}"></a>
+			</div>
+			<div class="col-md-9 col-sm-8">
+				<h5>{{ shop }}</h5>
+				<div class="shop-contacts">
+
+					{% if shop.site %}
+					<p class="site" data-icon="&#xe08d;">
+						{{ shop.site }}
+					</p>
+					{% endif %}
+
+					{% if shop.use_custom_adress %}
+					{% if shop.custom_adress %}
+					<p class="adress"  data-icon="&#xe096;">
+						<span>{{ shop.custom_adress }}</span>
+						{% endif %}
+					</p> 
+					{% else %}
+					<p class="adress" data-icon="&#xe096;">
+						<span>
+						{{ shop.city }}
+						{{ shop.region }}
+						{{ shop.area }}
+						{{ shop.street }}
+						{{ shop.house }}
+						{{ shop.building }}
+						{{ shop.flat }}
+						{{ shop.index }}
+						{{ shop.settlement }}
+						{% endif %}
+						</span>
+					</p>
+					{% if shop.phones.all.exists %}
+					<p class="phone" data-icon="&#xe048;">
+						<span>
+							{% for phone in shop.phones.all %}
+							{{ phone }} <br />
+							{% endfor %}
+						</span>
+						{% endif %}
+					</p>
+
+					{% if shop.work_time %}
+					<p class="time">Время работы: {{ shop.work_time }}</p>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+	</div>
+	</div></div>
+
+
+
+
+
+
+{% endfor %}
+
+{% if shops.count > 0 %}
+{% include 'discount/general/_pager.html' %}
+
+{% endif %}
+
+
+</div>
+
+{% endblock content %}
+

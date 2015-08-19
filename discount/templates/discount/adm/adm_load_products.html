@@ -1,0 +1,34 @@
+{% extends 'discount/base/base.html' %}
+
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="form">
+{% csrf_token %}
+{{ form.as_p }}
+
+<input type="submit">
+</form>
+
+
+{% if errors %}
+ {% for key, error in errors.items %}
+ {% if error %}
+     <div>
+     <label>Строка: {{ key }}</label>{{ error }}
+</div>
+ {% endif %}
+ {% endfor %}
+ {% endif %}
+
+
+  {% if products %}
+ {% for key, product in products.items %}
+ {% if product %}
+     <div>
+     <label>Строка: {{ key }}</label>{{ product }}
+</div>
+ {% endif %}
+ {% endfor %}
+ {% endif %}
+
+
+{% endblock content %}

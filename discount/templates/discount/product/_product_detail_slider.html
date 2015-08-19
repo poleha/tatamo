@@ -1,0 +1,62 @@
+{% load staticfiles %}
+
+
+<script src="{% static "discount/js/flexslider/jquery.flexslider-min.js"  %}"></script>
+<link href="{% static "discount/js/flexslider/flexslider.css" %}" rel="stylesheet">
+
+
+<!-- Place somewhere in the <body> of your page -->
+<div id="slider" class="flexslider">
+  <ul class="slides">
+    {% for image in product.images.all %}
+		<li><img src="{{ image.image.thumb300 }}" /></li>
+	{% endfor %}
+    <!-- items mirrored twice, total of 12 -->
+  </ul>
+</div>
+<div id="carousel" class="flexslider">
+  <ul class="slides">
+    {% for image in product.images.all %}
+	  <li> <div class="item"><img src="{{ image.image.thumb66 }}" /></div> </li>
+	{% endfor %}
+    <!-- items mirrored twice, total of 12 -->
+  </ul>
+</div>
+
+
+
+
+
+<script>
+$(function() {
+  // The slider being synced must be initialized first
+  $('#carousel').flexslider({
+    animation: "slide",
+    controlNav: false,
+    animationLoop: false,
+    slideshow: false,
+    itemWidth: 76,
+    itemMargin: 0,
+    asNavFor: '#slider',
+	prevText: "",
+	nextText: ""
+  });
+
+  $('#slider').flexslider({
+    animation: "slide",
+    controlNav: false,
+    animationLoop: false,
+    slideshow: false,
+	sync: "#carousel",
+	prevText: "",
+	nextText: ""
+  });
+});
+</script>
+
+
+<style>
+#carousel {
+
+}
+</style>

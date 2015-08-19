@@ -1,0 +1,41 @@
+{% if not is_ajax %}
+<div class="get-code">
+{% endif %}
+<div id="dialog-form">
+{% if status_text %}
+{{ status_text }}
+{% endif %}
+
+
+
+
+{% if action %}
+<form method="post" class="ptc-action-form" id="ptc-subscribe-form-{{ product.pk }}" action="{{ action_url }}">
+       {% csrf_token %}
+
+
+{% if unsubscribe_form %}
+	<div class="unsubscribe-form">
+{{ unsubscribe_form.as_p }}
+	</div>
+{% endif %}
+<input class="{{ input_cls }}" type="submit" value="{{ button_name }}" name="{{ action }}">
+    {% if unsubscribe_form %}
+    <span class="clear">
+	<input class="action-submit" type="submit" value="" name="cancel"></span>
+{% endif %}
+
+<input type="hidden" class='submit-type' name="submit-type" value="">
+
+
+</form>
+
+
+
+{% endif %}
+</div>
+
+{% if not is_ajax %}
+</div>
+
+{% endif %}

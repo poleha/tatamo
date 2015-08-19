@@ -1,0 +1,14 @@
+{% load discount_tags %}
+<div>
+<label>Комментарий магазина:</label>
+{{ product.shop_comment }}
+</div>
+<div>
+<label>Стартовать после согласования: </label>
+{{ product.start_after_approve|bool_as_yes }}
+</div>
+<form id="product-tatamo-manager-approve-form-{{ product.pk }}" class="product-tatamo-manager-approve-form" method="post" action="{% url 'discount:product-tatamo-manager-approve' product.pk %}">
+{% csrf_token %}
+    {{ form }}
+    <input type="submit">
+</form>

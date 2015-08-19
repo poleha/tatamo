@@ -1,0 +1,52 @@
+{% extends 'discount/base/base.html' %}
+
+{% block content %}
+<h2>Products</h2>
+    <div>
+{% for product in products %}
+    <div>
+<a href="{{ product.get_absolute_url }}">{{ product }}</a>
+    </div>
+    {% endfor %}
+    </div>
+
+
+<h2>Banners</h2>
+        <div>
+{% for banner in banners %}
+    <div>
+<a href="{{ banner.get_absolute_url }}">{{ banner }}</a>
+    </div>
+    {% endfor %}
+    </div>
+
+     <h2>Shops</h2>
+        <div>
+{% for shop in shops %}
+    <div>
+<a href="{{ shop.get_absolute_url }}">{{ shop }}</a>
+    </div>
+    {% endfor %}
+    </div>
+
+    <h2>Changers</h2>
+        <div>
+{% for changer in changers %}
+<div>
+    <a href="{{ changer.get_absolute_url }}">{{ changer }}</a>
+</div>
+    {% endfor %}
+    </div>
+
+<h2>Contact forms</h2>
+        <div>
+{% for contact_form in contact_forms %}
+    <div>
+<a href="{{ contact_form.get_absolute_url }}">{{ contact_form }}</a>
+    </div>
+    {% endfor %}
+    </div>
+
+
+
+{% endblock content %}

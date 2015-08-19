@@ -1,0 +1,36 @@
+{% if not voted %}
+<form method="post" id="poll-form" action="{{ submit_url }}">
+{{ poll.question }}
+    {% csrf_token %}
+{{ form.answer.errors }}
+{{ form.answer }}
+{{ form.poll }}
+    <input type="submit" value="Отправить">
+</form>
+<div id="poll-form-error"></div>
+
+{% if render_scripts %}
+
+<script>
+    $(function() {
+    var frm = $('#poll-form');
+    frm.on('submit', function () {
+        $.ajax({
+            type: frm.attr('method'),
+            url: frm.attr('action'),
+            data: frm.serialize(),
+            success: function (data) {
+                frm.html(data);
+                $("#poll-form-error").html("");
+            },
+            error: function(data) {
+                $("#poll-form-error").html("Ошибка при отправке формы");
+            }
+        });
+        return false;
+    });
+    });
+</script>
+
+{% endif %}
+{% endif %}

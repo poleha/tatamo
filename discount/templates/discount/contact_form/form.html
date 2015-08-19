@@ -1,0 +1,39 @@
+
+<div id="contact" class="block">
+    <div class="container">
+        <div class="row">                                           
+            <div class="col-md-12">
+
+            
+				<form method="post" id="contact-form" class="clearfix" action="{% url 'contact_form:add' %}">
+
+				<div class="title"><h1>Свяжитесь с нами</h1></div>
+				<div class="form-wrapper clearfix">
+				{% csrf_token %}
+				 {{ form.name.errors }}
+				 {{ form.name }}
+				{{ form.email.errors }}
+				 {{ form.email }}
+				{{ form.phone.errors }}
+				 {{ form.phone }}
+
+				{{ form.body.errors }}
+				 {{ form.body }}
+				<input type = hidden name="back_url" value="{{ path }}">
+				<input type=submit value="Отправить" id="contact_form_submit">
+
+				</div>
+				</form>
+				<div id="test">
+				</div>
+				<div id="contact-form-error"></div>
+				{% if not no_scripts %}
+				{% include 'contact_form/contact_form_scripts.html' %}
+				{% endif %}
+
+
+            </div> </div> </div> </div>
+
+
+
+

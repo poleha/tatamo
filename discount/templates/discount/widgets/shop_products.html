@@ -1,0 +1,18 @@
+{% load cache %}
+{% cache 60 * 30 shop_products pk %}
+{% if count > 0 %}
+<div class="shop-products">
+	<div class="title"><h4><a href="{{ shop_url }} ">Другие предложения магазинa:</a></h4></div>
+<div class="products-list clearfix">
+{% for product in shop_products %}
+<div class="item">
+	<a href='{{ product.get_absolute_url }}'><img src="{{ product.get_main_image.thumb120 }}"><div class="name">{{ product }}</div></a>
+</div>
+{% endfor %}
+</div>
+</div>
+{% endif %}
+
+
+</div>
+{% endcache %}

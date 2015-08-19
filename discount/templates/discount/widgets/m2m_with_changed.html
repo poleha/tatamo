@@ -1,0 +1,9 @@
+{% for val, cls in values %}
+{% if cls == 'added' %}
+<span class="{{ cls }}" style="font-weight: bold !important;">+{{ val }}</span>
+    {% elif cls == 'removed' %}
+    <span class="{{ cls }}" style="color: #CCD8DB !important;">-{{ val }}</span>
+    {% else %}
+    <span class="{{ cls }}">{{ val }}</span>
+    {% endif %}
+{% endfor %}

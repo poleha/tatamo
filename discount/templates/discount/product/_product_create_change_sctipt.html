@@ -1,0 +1,166 @@
+<script>
+
+$(function() {
+
+
+function productTypeSelector(productTypeSelector, categorySelector){
+
+    var ptElem = $(productTypeSelector);
+    var cElem = $(categorySelector);
+    //ptElem.html('');
+    var disabled =  ptElem.attr("disabled");
+    ptElem.attr("disabled", "disabled");
+    var categoryId =  cElem.find('option:selected').val();
+    var typeId =  ptElem.find('option:selected').val();
+    var data = {
+        'category-id': categoryId,
+        'type-id': typeId,
+    };
+
+     $.ajax({
+            type: 'post',
+            url: '{% url 'discount:get-available-product-types-ajax' %}',
+            data: data,
+            success: function (data) {
+            if (disabled != 'disabled'){
+                        ptElem.html(data.text);
+                ptElem.removeAttr("disabled");
+                }
+
+            availableFiltersSelector('#id_product_type');
+            },
+            error: function(data) {
+            ptElem.attr("disabled");
+            }
+        });
+
+};
+
+
+function availableFiltersSelector(productTypeSelector){
+
+    var ptElem = $(productTypeSelector);
+    //ptElem.html('');
+    var typeId =  ptElem.find('option:selected').val();
+    var data = {
+        'type-id': typeId,
+    };
+
+     $.ajax({
+            type: 'post',
+            url: '{% url 'discount:get-available-filters-ajax' %}',
+            data: data,
+            success: function (data) {
+
+                for (var key in data){
+                 if(key == 'text') continue;
+                 var block = $('#' + key +'-block');
+                 if (data[key]){
+                 block.removeClass('hidden');
+                 }
+                    else{
+                  block.addClass('hidden');
+                 }
+
+                }
+                /*
+                if (data.sizes) {
+                   $('#sizes-block').removeClass('hidden');
+                }
+                else{
+                $('#sizes-block').addClass('hidden');
+                }
+
+                if (data.colors) {
+                   $('#colors-block').removeClass('hidden');
+                }
+                else{
+                $('#colors-block').addClass('hidden');
+                }
+
+                */
+            },
+            error: function(data) {
+            }
+        });
+
+};
+
+    $('#id_category').change(function(e){
+productTypeSelector('#id_product_type','#id_category');
+
+ });
+
+
+    $('#id_product_type').change(function(e){
+availableFiltersSelector('#id_product_type');
+
+ });
+
+
+        productTypeSelector('#id_product_type','#id_category');
+    availableFiltersSelector('#id_product_type');
+
+
+
+  function formset_hider(outer_div_id, input_type, prefix, postfix, inner_div_class, start) {
+        //var prefix = 'id_conditions-';
+        //var postfix = '-condition';
+        var elems = $(outer_div_id).find(input_type);
+        var max = null;
+
+        for (var i = 0; i < elems.length; i++) {
+            var elem = elems[i];
+            var num = elem.id.replace(prefix, '').replace(postfix, '');
+            var val = $(elem).val();
+            if (val) {
+                max = num;
+            }
+        }
+        if (max == null) {
+            max = start;
+        }
+        else {
+            max++;
+        }
+
+        for (i = 0; i < elems.length; i++) {
+            elem = elems[i];
+            var block = $(elem).closest(inner_div_class);
+
+            if (i <= max) {
+                $(block).removeClass('hidden');
+            }
+            else {
+                $(block).addClass('hidden');
+            }
+
+
+        }
+    }
+
+
+
+    $("#action-conditions").find('textarea').keyup(function(e) {
+    formset_hider("#action-conditions", 'textarea', 'id_conditions-', '-condition', '.action-condition', 0);
+        });
+
+formset_hider("#action-conditions", 'textarea', 'id_conditions-', '-condition', '.action-condition', 0);
+
+
+
+
+$("#related-actions").find('select').change(function(e) {
+    formset_hider("#related-actions", 'select', 'id_related_products-', '-related_product', '.related-action', 0);
+        });
+
+
+
+
+formset_hider("#related-actions", 'select', 'id_related_products-', '-related_product', '.related-action', 0);
+
+
+
+});
+
+</script>

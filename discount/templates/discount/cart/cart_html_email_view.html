@@ -1,0 +1,25 @@
+{% load discount_tags %}
+
+{% for product in products %}
+{% get_coupon product user %}
+
+{% endfor %}
+
+
+
+
+{% comment %}
+<form method="get" action="{{ cart.get_send_url }}">
+{% csrf_token %}
+{{ send_cart_form }}
+<input type="submit" value="Отправить на e-mail">
+</form>
+<div class="coupon-links">
+<a href="{{ cart.get_view_url }}">Просмотреть</a>
+<a href="{{ cart.get_pdf_url }}">Просмотреть как PDF</a>
+</div>
+{% endcomment %}
+
+
+
+

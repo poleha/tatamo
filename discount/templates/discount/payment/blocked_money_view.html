@@ -1,0 +1,19 @@
+{% extends 'discount/base/base.html' %}
+{% load discount_tags %}
+{% block content %}
+{% shop_balance %}
+    <table>
+<th>Акция</th><th>Заблокировано средств</th><th>Истрачено средств</th><th>Статус</th><th>Дата начала</th><th>Дата окончания</th>
+    {% for product in products %}
+    <tr>
+    <td><a href='{{ product.get_absolute_url }}'>{{ product }}</a></td>
+    <td>{{ product.points_blocked }}</td>
+    <td>{{ product.points_spent }}</td>
+    <td>{{ product.status_text }}</td>
+    <td>{{ product.start_date }}</td>
+    <td>{{ product.end_date }}</td>
+    </tr>
+    {% endfor %}
+
+</table>
+{% endblock content %}

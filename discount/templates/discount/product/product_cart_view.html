@@ -1,0 +1,5 @@
+{% extends 'discount/base/base_full_screen.html' %}
+{% load discount_tags %}
+{% block content %}
+{% get_coupon product user %}
+{% endblock content %}

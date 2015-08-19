@@ -1,0 +1,136 @@
+{% load discount_tags %}
+{% load cache %}
+
+
+   <div class="row">
+
+
+        {% for product in products %}
+    {% cache 2419200 product_list_inner_list_1 product.pk %}
+        <div class="col-md-12">
+            <div class="product item">
+       <div class="row">
+
+           <div class="col-md-3 col-sm-4 image-wrapper wrapper">
+
+           <a href="{{ product.get_absolute_url }}">
+			   
+           		<img class="list-product-image" src="{{ product.get_main_image.thumb180 }}">
+			   </a>
+       	   </div>
+
+           <div class="col-md-9 col-sm-8">
+
+           <div class="row head">
+              <div class="col-md-9 ">
+				  <div class="name"><a href = "{{ product.get_absolute_url }}">{{ product }}</a><div class="percent">  -{{ product.percent }}%  </div></div>
+                  <div class="brand"> {{ product.brand }} </div>
+              </div>
+              <div class="col-md-3 shop right-al">
+                   <a href = "{{ product.shop.get_absolute_url }}">{{ product.shop.title }}</a>
+              </div>
+            </div>
+               <hr class="bold"></hr>
+           <div class="body clearfix">
+               <div class="prices inline-b">
+
+                   <span class="price normal-price">
+                       {{ product.normal_price }} <span class="rub sm">руб</span>
+                   </span>
+                   <span class="price stock-price">
+					   {{ product.stock_price }}  <span class="rub bld">руб</span>
+                   </span>
+               </div>
+			   <div class="dates inline-b right">
+				   <span class="date inline-b" data-icon="&#xe081;">
+                       до<span class="hilighted"> {{ product.end_date }}
+                       </span></span>
+				   <span class="date inline-b" data-icon="&#xe018;">
+
+
+
+                       <span class="hilighted">
+
+                          {% endcache %}
+                           {% get_days_left product %}
+      {% cache 2419200 product_list_inner_list_2 product.pk %}
+                       </span></span>
+
+               </div>
+           </div>
+
+           <div class="row about">
+               
+                  <div class="col-md-12">
+                  
+                   <div class="descript">
+                   
+                   <div class="item">
+                 
+                     <span class="label">Состав:</span>
+
+                   <div class="list inline-b"> {{ product.compound }}</div>
+                   </div>
+
+
+
+
+
+                {% include 'discount/product/_product_filter_params.html' %}
+
+{% comment %}
+                   <div class="item">
+                   <span class="label">Размеры:</span>
+                   <div class="list inline-b"><ul class="sizes">
+                       {% for size in product.sizes.all %}
+                       <li class="size">
+                           {{ size }}
+                       </li>
+                       {% endfor %}
+                   </ul>
+                   </div>
+           </div>
+
+   {% endcomment %}
+
+
+
+					  </div>
+      {% endcache %}
+                        {% ptc_add_form product%}
+                            {% ptc_subscribe_form product%}
+                            {% product_coupon_status product%}
+
+
+
+
+               </div>
+           </div>
+
+
+
+
+
+       </div>
+
+
+
+
+
+                </div></div></div> <!- item ->
+
+        {% endfor %}
+
+        <div class="col-md-12">
+        {% if products.count > 0 %}
+        {% include 'discount/general/_pager.html' %}
+        {% endif %}
+        </div>
+
+   </div>
+
+
+
+
+
+
