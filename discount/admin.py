@@ -4,6 +4,9 @@ from discount.forms import ProductAdminForm, ProductImageBaseFormset
 #import reversion
 from django.db.models import Q
 
+#class TatamoModelAdmin(admin.ModelAdmin):
+#    change_form_template = 'discount/discount_admin/change_form.html'
+
 class ProductImageAdmin(admin.ModelAdmin):
     pass
 
@@ -37,6 +40,7 @@ class ProductConditionInline(admin.TabularInline):
 
 
 class ProductAdmin(admin.ModelAdmin):
+    change_form_template = 'discount/discount_admin/product/change_form.html'
     inlines = [ProductImagesInline, ProductActionsInline, ProductBannersInline, ProductConditionInline]
     list_filter = ['status', 'shop', 'brand', 'filter_values', 'product_type', 'ad']
     search_fields = ['title']
