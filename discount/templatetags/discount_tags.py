@@ -22,6 +22,15 @@ def bool_as_yes(value):
     else:
         return 'Нет'
 
+from django.contrib.admin.helpers import AdminReadonlyField, AdminField
+@register.filter(name='get_admin_field')
+def get_admin_field(fieldset, field, is_first=False):
+        if field in fieldset.readonly_fields:
+            return AdminReadonlyField(fieldset.form, field, is_first=is_first,
+                model_admin=fieldset.model_admin)
+        else:
+            return AdminField(fieldset.form, field, is_first=is_first)
+
 
 @register.filter(name='get_item')
 def get_item(dct, key):
@@ -33,9 +42,6 @@ def get_item(dct, key):
         except:
             res = None
     return res
-
-
-
 
 
 @register.filter(name='get_attr')
