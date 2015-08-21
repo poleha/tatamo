@@ -38,8 +38,9 @@ class ProductConditionInline(admin.TabularInline):
     extra = 3
 
 
-
+@admin.register(models.Product)
 class ProductAdmin(admin.ModelAdmin):
+    #fields = (('start_date', 'end_date'), 'title')
     change_form_template = 'discount/discount_admin/product/change_form.html'
     inlines = [ProductImagesInline, ProductActionsInline, ProductBannersInline, ProductConditionInline]
     list_filter = ['status', 'shop', 'brand', 'filter_values', 'product_type', 'ad']
@@ -189,7 +190,7 @@ class CartAdmin(admin.ModelAdmin):
     inlines = [CarpProductsInline]
 """
 
-admin.site.register(models.Product, ProductAdmin)
+#admin.site.register(models.Product, ProductAdmin)
 admin.site.register(models.ProductType, ProductTypeAdmin)
 admin.site.register(models.Shop, ShopAdmin)
 admin.site.register(models.Comment)
