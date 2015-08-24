@@ -34,13 +34,40 @@ class ProductConditionInline(admin.TabularInline):
     model = models.ProductCondition
     extra = 3
 
-
-
+@admin.register(models.Product)
 class ProductAdmin(admin.ModelAdmin):
-    inlines = [ProductImagesInline, ProductActionsInline, ProductBannersInline, ProductConditionInline]
+    class Media:
+        css = {
+             'all': ('discount/css/admin/product.css',)
+        }
+    inlines = (ProductImagesInline, ProductConditionInline, ProductActionsInline, ProductBannersInline)
     list_filter = ['status', 'shop', 'brand', 'filter_values', 'product_type', 'ad']
+    readonly_fields = ('created', 'edited', 'hashed')
     search_fields = ['title']
     form = ProductAdminForm
+    fieldsets = (
+        (None, {
+            'fields': (('start_date', 'end_date', 'normal_price', 'stock_price'),)
+        }),
+        (None, {
+            'fields': (('user', 'shop', 'product_type'),)
+        }),
+        (None, {
+            'fields': (('status', 'start_after_approve'),)
+        }),
+        (None, {
+            'fields': (('title', 'brand', 'link'), 'body', )
+        }),
+        (None, {
+            'fields': (('code', 'use_code_postfix'), ('simple_code', 'use_simple_code'))
+        }),
+        ('Техническая информация', {
+            'fields': (('percent', 'price_category', 'discount_category', 'ad', 'hashed'), ('created', 'edited', 'publish_time'))
+        }),
+        ('Комментарии', {
+            'fields': (('shop_comment', 'tatamo_comment'),)
+        }),
+    )
 
 
 class ProductChangerImagesInline(admin.TabularInline):
@@ -185,7 +212,7 @@ class CartAdmin(admin.ModelAdmin):
     inlines = [CarpProductsInline]
 """
 
-admin.site.register(models.Product, ProductAdmin)
+#admin.site.register(models.Product, ProductAdmin)
 admin.site.register(models.ProductType, ProductTypeAdmin)
 admin.site.register(models.Shop, ShopAdmin)
 admin.site.register(models.Comment)
