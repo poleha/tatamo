@@ -908,58 +908,6 @@ class ProductCreate(generic.TemplateView):
 
         return context
 
-    """
-    @property
-    def display_submit_button(self): #to-approve
-        if self.model is None or self.model.status in [STATUS_NEED_REWORK, STATUS_PROJECT]:
-            return True
-        else:
-            return False
-
-    #@property
-    #def display_to_project_button(self):
-    #    if self.model is not None and self.model.status in [STATUS_NEED_REWORK, STATUS_APPROVED]:
-    #        return True
-    #    else:
-    #        return False
-
-    @property
-    def display_stop_button(self):
-        if self.model is not None and self.model.status in [STATUS_PUBLISHED, STATUS_APPROVED,
-                                                            STATUS_READY, STATUS_SUSPENDED,
-                                                            STATUS_NEED_REWORK, STATUS_PROJECT]:
-            return True
-        else:
-            return False
-
-    @property
-    def display_save_button(self):
-        if self.model and self.model.status in [STATUS_FINISHED, STATUS_TO_APPROVE]:
-            return False
-        else:
-            return True
-
-    @property
-    def display_start_button(self):
-        if self.model and self.model.status in [STATUS_APPROVED, STATUS_SUSPENDED]:
-            return True
-        else:
-            return False
-
-    @property
-    def display_suspend_button(self):
-        if self.model is not None and self.model.status in [STATUS_PUBLISHED, STATUS_READY]:
-            return True
-        else:
-            return False
-
-    @property
-    def display_update_button(self):
-        if self.model is not None and self.model.status in [STATUS_READY, STATUS_APPROVED, STATUS_SUSPENDED]:
-            return True
-        else:
-            return False
-    """
     @property
     def display_add_image_button(self):
         if self.model is None or  self.model.status in \

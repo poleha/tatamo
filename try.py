@@ -465,27 +465,27 @@ for p in ps:
 """
 
 end_date = timezone.datetime(day=15, year=2015, month=9)
-start_date = timezone.datetime(day=15, year=2015, month=8)
-ps = models.Product.objects.filter(shop_id__in=[87], status__in=[models.STATUS_PROJECT, models.STATUS_APPROVED])
+#start_date = timezone.datetime(day=15, year=2015, month=8)
+ps = models.Product.objects.filter(shop_id__in=[64, 26, 66, 83, 27, 82], status=models.STATUS_PUBLISHED, end_date__lt=end_date)
 count = ps.count()
 
 
 for p in ps:
-    p.start_date = start_date
+    #p.start_date = start_date
     p.end_date = end_date
     #p.use_code_postfix = False
     #start = timezone.datetime(day=1, year=2015, month=8).date()
-    p.start_after_approve = True
-    p.status = models.STATUS_APPROVED
+    #p.start_after_approve = True
+    #p.status = models.STATUS_APPROVED
     #if p.start_date < start:
     #    print(p.get_absolute_url(), p.start_date, p.end_date)
     #    p.start_date = start
 
     try:
-        p.save(check_status=False)
+        p.save()
         #p = p.saved_version
         count -= 1
-        print(p.shop, 'left', count)
+        print(p.shop, 'left', count, p.status_text)
     except models.ValidationError as e:
         print(e)
 

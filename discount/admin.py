@@ -34,15 +34,25 @@ class ProductConditionInline(admin.TabularInline):
     model = models.ProductCondition
     extra = 3
 
+
+def filter_values():
+    res = ()
+    for filter_type, filter_name in models.FILTER_TYPES:
+        field_name, field_label = models.FILTER_PARAMS_FIELD_NAMES[filter_type]
+        res += (field_name,)
+    return res
+
+
+
 @admin.register(models.Product)
 class ProductAdmin(admin.ModelAdmin):
     class Media:
         css = {
              'all': ('discount/css/admin/product.css',)
         }
+    readonly_fields = ('created', 'edited', 'hashed')
     inlines = (ProductImagesInline, ProductConditionInline, ProductActionsInline, ProductBannersInline)
     list_filter = ['status', 'shop', 'brand', 'filter_values', 'product_type', 'ad']
-    readonly_fields = ('created', 'edited', 'hashed')
     search_fields = ['title']
     form = ProductAdminForm
     fieldsets = (
@@ -56,7 +66,10 @@ class ProductAdmin(admin.ModelAdmin):
             'fields': (('status', 'start_after_approve'),)
         }),
         (None, {
-            'fields': (('title', 'brand', 'link'), 'body', )
+            'fields': (('title', 'brand', 'link'), 'body')
+        }),
+        ('Фильтры', {
+            'fields': (filter_values(),)
         }),
         (None, {
             'fields': (('code', 'use_code_postfix'), ('simple_code', 'use_simple_code'))
@@ -68,6 +81,23 @@ class ProductAdmin(admin.ModelAdmin):
             'fields': (('shop_comment', 'tatamo_comment'),)
         }),
     )
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        for param_key, field_names in models.FILTER_PARAMS_FIELD_NAMES.items():
+                field_name, field_label = field_names
+                if field_name in form.cleaned_data:
+                    for filter_value in form.cleaned_data[field_name]:
+                        fvtp, created = models.Product.filter_values.through.objects.get_or_create(product=obj, filtervalue=filter_value)
+                        if created:
+                            fvtp.save()
+                    models.Product.filter_values.through.objects.filter(~Q(filtervalue__in=form.cleaned_data[field_name]), product=obj, filtervalue__filter_type=param_key).delete()
+
+
+
+
+#for filter_type in models.FILTER_TYPES:
+#    def filter_param(self):
+
 
 
 class ProductChangerImagesInline(admin.TabularInline):

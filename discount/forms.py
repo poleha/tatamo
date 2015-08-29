@@ -821,7 +821,7 @@ class ProductForm(HashedFormMixin, SaveUserMixin, StatusScheme):
 
 
 
-        start_date = self.get_value('start_date')
+        #start_date = self.get_value('start_date')
         end_date = self.get_value('end_date')
         status = self.get_value('status')
 
@@ -883,8 +883,23 @@ class AddProductToCartForm(forms.Form):
 
 
 class ProductAdminForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for param_key, field_names in models.FILTER_PARAMS_FIELD_NAMES.items():
+            field_name, field_label = field_names
+            if self.instance.pk:
+                self.fields[field_name].initial = self.instance.filter_values.filter(filter_type=param_key)
+
     def clean(self, *args, **kwargs):
         return super().clean(*args, **kwargs)
+
+
+for param_key, field_names in models.FILTER_PARAMS_FIELD_NAMES.items():
+        field_name, field_label = field_names
+        field = ModelMultipleChoiceFieldWithCheckbox(queryset=models.FilterValue.objects.filter(filter_type=param_key),
+                                                     required=False, label=field_label)
+        #field.widget.attrs['class'] = 'required'
+        ProductAdminForm.base_fields[field_name] = field
 
 
 class ShowCodeForm(forms.Form):
