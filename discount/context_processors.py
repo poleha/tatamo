@@ -1,3 +1,3 @@
-from kulik.settings import DEBUG
+from django.conf import settings
 def debug(request):
-    return {'debug': DEBUG}
+    return {'debug': settings.DEBUG}
