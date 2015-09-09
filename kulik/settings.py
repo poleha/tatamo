@@ -290,12 +290,7 @@ except:
 
 
 
-
-
-
-
-
-if HOSTNAME in ['kulik', 'qblik', 'kilik-pc', 'ubuntu']:
+if HOSTNAME in ['localhost', 'ubuntu']:
     DEBUG = True
     TEMPLATE_DEBUG = True
     DISCOUNT_CACHE_ENABLED = False
