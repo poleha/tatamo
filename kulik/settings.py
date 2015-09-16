@@ -232,6 +232,7 @@ PAYMENT_USER_ID = 1
 DEFAULT_FROM_EMAIL = 'Tatamo.ru <admin@tatamo.ru>'
 SITE_URL = 'http://tatamo.ru'
 
+
 #from datetime import timedelta
 #celery
 #http://docs.celeryproject.org/en/latest/django/first-steps-with-django.html
