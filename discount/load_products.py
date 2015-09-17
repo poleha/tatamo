@@ -21,7 +21,7 @@ from django.db.models import Q
 import os
 from kulik import settings
 from multi_image_upload.models import get_effects
-from django.core.files.storage import FileSystemStorage
+
 from datetime import timezone, datetime
 from discount.helper import generate_code
 from django.db import transaction
