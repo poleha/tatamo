@@ -91,9 +91,8 @@ def _send_message_for_all_changed_products():
 #TODO вернуть
 def _main_procedure():
     m0 = _suspend_expired_products()
-    m1 = ''#_suspend_empty_products()
-    m3 = _start_ready_products()
-    message = '%s \n %s \n %s \n %s \n %s' % (m0, m1, m2, m3, m4)
+    m1 = _start_ready_products()
+    message = '%s \n %s' % (m0, m1)
     mail_admins('_main_procedure procedure is completed on Tatamo productive', message)
 
 
