@@ -612,11 +612,6 @@ class ProductDetail(generic.ListView):
         if self.request.user.has_perm_for_product(self.product):
             context['manage_url'] = self.product.get_manage_url()
             context['banners'] = self.product.productbanner_set
-            context['actions'] = self.product.actions.filter(status__in=[
-                models.ACTION_STATUS_ACTIVE,
-                models.ACTION_STATUS_PAUSED,
-                models.ACTION_STATUS_PLANNED
-            ]).order_by('start_date')
 
             try:
                 changer = models.ProductChanger.objects.get(~Q(status=models.STATUS_APPROVED), product=self.product)
@@ -744,33 +739,15 @@ class MainPage(generic.TemplateView):
         if favourites is None:
             max_count = settings.MAX_POPULAR_COUNT
             today = get_today()
-            ad_products = []
             additional_products = []
 
-            if today >= settings.START_DATE :
-                products = models.Product.objects.get_available_products().filter(actions__status=models.ACTION_STATUS_ACTIVE,
-                                                          actions__action_type=models.ACTION_TYPE_POPULAR)[:max_count]
-            else:
-                products = models.Product.objects.none()
 
 
-            existing_pks = list(products.values_list('pk', flat=True))
-            count = products.count()
-            lack = max_count - count
-            if lack > 0:
-                ad_products = models.Product.objects.get_ad_products_popular().order_by('id')[:lack]
-                count = ad_products.count()
-                lack = max_count - count
-
-            if lack > 0:
-                additional_products = models.Product.objects.get_available_products().exclude(pk__in=existing_pks).exclude(productbanner__banner=None)
-                additional_products = filter_popular_products(additional_products, lack)
+            additional_products = models.Product.objects.get_available_products().exclude(productbanner__banner=None)
+            additional_products = filter_popular_products(additional_products, max_count)
 
             favourites = []
-            for product in products:
-                favourites.append(product)
-            for product in ad_products:
-                favourites.append(product)
+
             for product in additional_products:
                 favourites.append(product)
             cache.set(key, favourites, 60 * 30)
@@ -1065,17 +1042,6 @@ class ProductCreate(generic.TemplateView):
             related_product_formset.instance = product
             related_product_formset.save()
 
-            if product.status in [models.STATUS_PUBLISHED, models.STATUS_READY]: #Для READY не надо, она сама переведется
-                try:
-                    with transaction.atomic():
-                        product.pay()
-
-                except models.MoneyExeption:
-                    existing_product = models.Product.objects.get(pk=product.pk)
-                    existing_product.apply_storage_params() #Поскольку тут задействован memcached, в транзакции не откатится
-                    existing_product.clear_cache() #Поскольку тут задействован memcached, в транзакции не откатится
-                    form.add_error(None, 'Недостаточно средств')
-                    return self.render_to_response(self.get_context_data(form=form, image_formset=image_formset))
 
             return HttpResponseRedirect(reverse('discount:product-detail', kwargs={'pk': product.id}))
         else:
@@ -1876,55 +1842,6 @@ class HelpPageView(generic.TemplateView):
     template_name = 'discount/static/help_page.html'
 
 
-"""
-class ShopBaseView(generic.TemplateView):
-
-    def set_model(self, **kwargs):
-        if 'pk' in kwargs:
-            model = models.Shop.objects.get(pk=kwargs['pk'])
-            self.model = model
-        else:
-            self.model = None
-
-    def post(self, request, *args, **kwargs):
-        #if kwargs['action'] == 'update':
-        #    instance = models.Shop.objects.get(pk=)
-
-        self.set_model(**kwargs)
-        data = request.POST.copy()
-        if 'to-approve' in request.POST:
-            data['status'] = str(models.SHOP_STATUS_TO_APPROVE)
-        elif self.model is None:
-            data['status'] = str(models.SHOP_STATUS_PROJECT)
-        else:
-            data['status'] = self.model.status
-
-
-        form = forms.ShopForm(data, request.FILES, instance=self.model)
-
-        if form.is_valid():
-            shop = form.save()
-            return HttpResponseRedirect(reverse('discount:shop-detail', kwargs={'pk':shop.pk}))
-        else:
-            return self.render_to_response(self.get_context_data(form=form))
-
-    def get_context_data(self, form=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        if form is None:
-            form = forms.ShopForm(instance=self.model)
-        context['form'] = form
-        if self.model is not None:
-            context['action_url'] = reverse('discount:shop-update', kwargs={'pk': self.model.pk})
-        else:
-            context['action_url'] = reverse('discount:shop-create')
-        return context
-
-    def get(self, request, *args, **kwargs):
-        self.set_model(**kwargs)
-        return super().get(request, *args, **kwargs)
-
-"""
-
 
 class ShopCreate(generic.TemplateView):
     #form_class = forms.ShopForm
@@ -2083,27 +2000,6 @@ class ShopsToUsersConfirm(generic.View):
         return HttpResponseRedirect(reverse('discount:user-detail'))
 
 
-class BlockedDaysView(generic.TemplateView):
-    template_name = 'discount/payment/blocked_money_view.html'
-
-    @shop_manager_only()
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        user = self.request.user
-        shop = user.get_shop
-        products = models.Product.objects.filter(shop=shop, actions__points_blocked__gt=0).distinct()
-        context['products'] = products
-        return context
-
-    def get(self, request, *args, **kwargs):
-        user = request.user
-        if not user.is_shop_manager:
-            return HttpResponseRedirect(reverse('discount:full-login'))
-        return self.render_to_response(self.get_context_data(**kwargs))
-
 
 
 class ShopOfferView(generic.TemplateView):
@@ -2207,7 +2103,14 @@ def get_ptc_subscribe_actions_context(product, request=None, user=None):
     #    unsubscribe_form = forms.UnsubscribeForm()
     #    ptc_action = 'unsubscribe_form_repeated'
     #    ptc_button_name = 'Отправить'
-    if ptc is None or ptc.status in [models.PTC_STATUS_CART, models.PTC_STATUS_INSTANT]:
+    if product.no_code_required:
+        action = None
+        button_name = None
+        status_text = 'Для получения скидки промокод не требуется'
+        action_url = None
+        code = None
+
+    elif ptc is None or ptc.status in [models.PTC_STATUS_CART, models.PTC_STATUS_INSTANT]:
         if url_name == 'product-detail':
             action = 'first_subscribe'
             button_name = 'Мгновенно получить промокод'
@@ -2279,288 +2182,6 @@ def get_ptc_add_actions_context(product, request=None, user=None, action=None):
         return {'action_url': action_url, 'submit_button_name': submit_button_name,
                 'action': action, 'product': product, 'product': product,
                 'input_cls': input_cls, 'block_cls': block_cls, 'inner_block_cls': inner_block_cls}
-
-
-class RecreateProductPayments(generic.View):
-
-    @shop_manager_only()
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
-
-    @transaction.atomic
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        pk = kwargs.get('pk')
-        product = models.Product.objects.get(pk=pk)
-        product.prepare_product_account()
-        return HttpResponseRedirect(reverse('discount:product-detail', kwargs={'pk': pk}))
-
-class ActionDaysView(generic.TemplateView):
-    template_name = 'discount/product/action_days_view.html'
-
-    @shop_manager_only()
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
-
-    def get(self, request, *args, **kwargs):
-        if 'submit' in request.GET:
-            form = forms.ActionDaysForm(data=request.GET)
-        else:
-            form = forms.ActionDaysForm(initial=request.GET)
-
-        return self.render_to_response(self.get_context_data(form=form))
-
-
-    def get_context_data(self, form=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['form'] = form
-
-        if form.is_valid():
-            start_date = form.cleaned_data.get('start_date')
-            category = form.cleaned_data.get('category')
-            end_date = form.cleaned_data.get('end_date')
-            action_type = int(form.cleaned_data.get('action_type'))
-            days = models.get_actions_count_for_interval(action_type, start_date, end_date, category=category)
-            context['days'] = days
-            if action_type == models.ACTION_TYPE_POPULAR:
-                context['max_actions'] = settings.MAX_POPULAR_COUNT
-            elif action_type == models.ACTION_TYPE_CATEGORY:
-                context['max_actions'] = settings.MAX_POPULAR_COUNT
-        return context
-
-
-class PaymentHistoryView(generic.TemplateView):
-    template_name = 'discount/payment/payment_history.html'
-
-    @shop_manager_only()
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        user = self.request.user
-        shop = user.get_shop
-        today = get_today()
-
-        data = self.request.GET.copy()
-        if not 'start_date' in data:
-            data['start_date'] = today + timezone.timedelta(days=-7)
-        if not 'end_date' in data:
-            data['end_date'] = today
-        form = forms.BasePeriodForm(data=data)
-        context['form'] = form
-
-        if form.is_valid():
-            start_date = form.cleaned_data['start_date']
-            end_date = form.cleaned_data['end_date']
-            ts = models.Payment.objects.filter(shop=shop, period__lte=end_date, period__gte=start_date)
-            try:
-                points_total = ts.aggregate(Sum('points'))['points__sum']
-                if points_total is None:
-                    points_total = 0
-            except:
-                points_total = 0
-
-            context['payments'] = ts.order_by('-created')
-            context['points_total'] = points_total
-        return context
-
-#Начнем с даты
-#class PostRender(generic.View):
-#    def post(self, request, *args, **kwargs):
-#
-#
-#
-#        return JsonResponse({'test': 'OK'})
-
-
-class SubscriptionConfirmView(generic.TemplateView):
-    template_name = 'discount/subscription/confirmation.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        action_type = kwargs['action_type']
-        user = self.request.user
-        active_subscription = user.active_subscription
-        shop = user.get_shop
-        shop_from_subscription = getattr(active_subscription, 'shop', None)
-        if shop_from_subscription and not shop == shop_from_subscription:
-            raise Exception('Ошибка валидации пользователя')
-
-        new_subscription_pk = self.kwargs.get('pk', None)
-
-        context['action_type'] = action_type
-        context['subscription_pk'] = new_subscription_pk
-        context['planned_subscription_type'] = shop.planned_subscription
-        if active_subscription:
-            context['active_subscription_type'] = active_subscription.subscription_type
-        if new_subscription_pk:
-            new_subscription_type = models.SubscriptionType.objects.get(pk=new_subscription_pk)
-            context['new_subscription_type'] = new_subscription_type
-            if active_subscription:
-                active_subscription_unused_price = active_subscription.unused_price
-            else:
-                active_subscription_unused_price = 0
-            to_pay = new_subscription_type.price - active_subscription_unused_price
-            context['to_pay'] = to_pay
-
-        if action_type == 'confirm-now' and to_pay > shop.points_free:
-             context['show_confirm'] = False
-        else:
-            context['show_confirm'] = True
-        return context
-
-    @shop_manager_only()
-    @transaction.atomic
-    def post(self, request, *args, **kwargs):
-        user = request.user
-        if 'cancel' in request.POST:
-            return HttpResponseRedirect(reverse('discount:subscription-manage'))
-
-        today = get_today()
-
-        active_subscription = user.active_subscription
-        shop = user.get_shop
-        shop_from_subscription = getattr(active_subscription, 'shop', None)
-        to_pay_confirmed = helper.to_int(request.POST.get('to-pay'))
-        if shop_from_subscription and not shop == shop_from_subscription:
-            raise Exception('Ошибка валидации пользователя')
-
-        action_type = request.POST.get('action-type')
-        if action_type in ['enable-autopay', 'disable-autopay']:
-            if action_type == 'enable-autopay':
-                active_subscription.auto_pay = True
-            else:
-                active_subscription.auto_pay = False
-            active_subscription.save()
-            return HttpResponseRedirect(reverse('discount:subscription-manage'))
-
-        elif action_type == 'cancel-planned':
-            shop.subscription_set.filter(status=models.SUBSCRIPTION_STATUS_PLANNED).delete()
-            return HttpResponseRedirect(reverse('discount:subscription-manage'))
-
-        else:
-            try:
-                new_subscription_type_pk = request.POST.get('subscription-pk', None)
-                new_subscription_type = models.SubscriptionType.objects.get(pk=new_subscription_type_pk, available=True)
-
-            except:
-                new_subscription_type = None
-            new_subscription = models.Subscription()
-            new_subscription.subscription_type = new_subscription_type
-            #new_subscription.user = user
-            new_subscription.user = user
-            new_subscription.shop = shop
-
-            if action_type == 'confirm-now':
-                if new_subscription_type.price == 0 and not shop.free_subscription_available:
-                    return HttpResponseRedirect(reverse('discount:subscription-manage'))
-                if active_subscription and active_subscription.subscription_type == new_subscription_type:
-                    return HttpResponseRedirect(reverse('discount:subscription-manage'))
-
-                if active_subscription is None:
-                    active_subscription_unused_price = 0
-                else:
-                    active_subscription_unused_price = active_subscription.unused_price
-
-                money_available = shop.points_free
-
-                if new_subscription_type.price > 0 and new_subscription_type.price > active_subscription_unused_price: #С доплатой
-                    to_pay = new_subscription_type.price - active_subscription_unused_price
-                    if not to_pay == to_pay_confirmed:
-                        raise MoneyExeption('Не удалось провести оплату')
-                    if to_pay <= money_available:
-                        try:
-                            with transaction.atomic():
-                                new_subscription.save()
-                                models.Payment.subscription_type_pay(shop, user, to_pay, new_subscription)
-                        except models.MoneyExeption:
-                            raise MoneyExeption('Недостаточно средств')
-                    else:
-                        raise MoneyExeption('Недостаточно средств')
-                elif new_subscription_type.price == 0 or active_subscription_unused_price == new_subscription_type.price:
-                    pass
-
-                new_subscription.start_date = today
-                new_subscription.set_end_date()
-                new_subscription.status = models.SUBSCRIPTION_STATUS_ACTIVE
-                new_subscription.save()
-
-                shop.subscription_set.filter(status=models.SUBSCRIPTION_STATUS_PLANNED).delete()
-
-                if active_subscription:
-                    active_subscription.status = models.SUBSCRIPTION_STATUS_CANCELLED
-                    active_subscription.end_date = today
-                    active_subscription.save()
-
-            elif action_type == 'confirm-plan':
-                start_date = active_subscription.end_date.replace(day=active_subscription.end_date.day + 1)
-
-                active_subscription.auto_pay = False
-                active_subscription.save()
-
-                new_subscription.start_date = start_date
-                new_subscription.set_end_date()
-                new_subscription.status = models.SUBSCRIPTION_STATUS_PLANNED
-                new_subscription.save()
-        return HttpResponseRedirect(reverse('discount:subscription-manage'))
-
-
-class SubscriptionManageView(generic.TemplateView):
-    template_name = 'discount/subscription/manage.html'
-
-    def dispatch(self, request, *args, **kwargs):
-        user = self.request.user
-        if not user.is_authenticated():
-            return HttpResponseRedirect(reverse('discount:full-login'))
-        elif not user.is_shop_manager:
-            HttpResponseRedirect(reverse('discount:shop-create'))
-        else:
-            return super().dispatch(request, *args, **kwargs)
-
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        user = self.request.user
-        shop = user.get_shop
-        active_subscription = shop.active_subscription
-        if active_subscription:
-            context['active_subscription'] = active_subscription
-
-        planned_subscription = shop.planned_subscription
-        if planned_subscription:
-            context['planned_subscription'] = planned_subscription
-
-        available_subscriptions = models.SubscriptionType.objects.filter(available=True)
-        available_subscriptions_list = []
-        if active_subscription:
-            available_subscriptions = available_subscriptions.exclude(pk=active_subscription.subscription_type.pk)
-        if planned_subscription:
-            available_subscriptions = available_subscriptions.exclude(pk=planned_subscription.subscription_type.pk)
-
-        if active_subscription or not shop.free_subscription_available:
-            available_subscriptions = available_subscriptions.exclude(price=0)
-            for available_subscription in available_subscriptions:
-                available_subscription.additional_price = available_subscription.get_additional_price(active_subscription)
-                available_subscriptions_list.append(available_subscription)
-            context['available_subscriptions'] = available_subscriptions_list
-        else:
-            context['available_subscriptions'] = available_subscriptions
-
-        return context
-
-
-class SubscriptionTypeDetailView(generic.DetailView):
-    template_name = 'discount/subscription/subscription_type_detail.html'
-    model = models.SubscriptionType
-    context_object_name = 'subscription_type'
-
-
-
-
-
 
 
 class GetAvailableProductTypesAjax(generic.View):
@@ -2682,105 +2303,7 @@ class ProductBannersView(generic.TemplateView):
 
 
 
-class ProductActionsView(generic.TemplateView):
-    template_name = 'discount/product/product_actions.html'
 
-    product = property(get_product)
-
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.has_perm_for_product(self.product):
-            return HttpResponseRedirect(reverse('discount:full-login'))
-        else:
-            return super().dispatch(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        product = self.product
-        action_formset = forms.ProductActionFormset(request.POST, request.FILES, instance=product)
-        if action_formset.is_valid():
-            try:
-                with transaction.atomic():
-                    action_formset.save()
-                    #product.prepare_product_account()
-
-                    #product.prepare_product_account()
-                    product.pay()
-
-            except models.MoneyExeption as me:
-                action_formset._non_form_errors += list(me.args)
-                return self.render_to_response(self.get_context_data(action_formset, **kwargs))
-            except ValidationError as ve:
-                action_formset._non_form_errors += [arg for arg in ve.args if arg ]
-                return self.render_to_response(self.get_context_data(action_formset, **kwargs))
-            except:
-                raise Exception('При сохранении произошла непредвиденная ошибка. Пожалуйста, обратитесь к поддержке')
-            return HttpResponseRedirect(reverse('discount:product-detail', kwargs={'pk': product.pk}))
-        else:
-            return self.render_to_response(self.get_context_data(action_formset, **kwargs))
-
-
-    def get_context_data(self, action_formset=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        product = self.product
-        context['product'] = product
-        if not action_formset:
-            action_formset = forms.ProductActionFormset(instance=product)
-        context['action_formset'] = action_formset
-
-
-        return context
-
-
-"""
-class SendBannerToApproveView(generic.View):
-
-    @csrf_exempt
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
-
-
-    def post(self, request, *args, **kwargs):
-        #product_pk = kwargs.get('pk')
-
-        #post = {}
-        #files = {}
-
-        #for key, value in request.POST.items():
-        #    if key[-3:] == '-id':
-        #        post['id'] = value
-        #    elif key[-12:] == 'shop_comment':
-        #        post['shop_comment'] = value
-        #    #elif key[-7:] == '-status':
-        #    #    post['status_id'] = value
-        #    elif key[-14:] == 'tatamo_comment':
-        #        post['tatamo_comment'] = value
-        #    elif key[-8:] == '-product':
-        #        post['product'] = value
-        #for key, value in request.FILES.items():
-        #    if key[-7:] == '-banner':
-        #        files['banner'] = value
-
-        if request.POST.get('id', ''):
-            product_banner = models.ProductBanner.objects.get(pk=request.POST.get('id'))
-        else:
-            product_banner = None
-        #product = models.Product.objects.get(pk=product_pk)
-        banner_form = forms.ProductBannerForm(request.POST, request.FILES, instance=product_banner)
-        data = {}
-        if banner_form.is_valid():
-            banner = banner_form.save(commit=False)
-            banner.status = models.BANNER_STATUS_ON_APPROVE
-            banner.save()
-            data['status'] = 1
-            data['text'] = banner.pk
-        else:
-            data['status'] = 2
-
-
-
-
-        return JsonResponse(data)
-
-"""
 import time
 class ProductStartView(generic.View):
 
@@ -2797,41 +2320,9 @@ class ProductStartView(generic.View):
         today = get_today()
         if not request.user.has_perm_for_product(product):
             return HttpResponseRedirect(reverse('discount:full-login'))
-        if product.status in [models.STATUS_APPROVED, models.STATUS_SUSPENDED]:
-            try:
-                with transaction.atomic():
-                    product.status = models.STATUS_PUBLISHED
-                    product.save()
-                    #product.prepare_product_account()
-                    product.pay()
-                    #product.prepare_product_account()
-            except (ValidationError, MoneyExeption):
-                return HttpResponseRedirect(reverse('discount:product-update', kwargs={'pk': product.pk}))
-            except:
-                raise Exception('При сохранении произошла непредвиденная ошибка. Пожалуйста, обратитесь к поддержке')
+
         return HttpResponseRedirect(reverse('discount:product-detail', kwargs={'pk': product.pk}))
 
-class GetProductToPayView(generic.View):
-    product = property(get_product)
-
-    def post(self, request, *args, **kwargs):
-        today = get_today()
-        product = self.product
-
-        to_pay = 0
-        if product.status == models.STATUS_PUBLISHED:
-            action_formset = forms.ProductActionFormset(request.POST, instance=product)
-            if action_formset.is_valid():
-                for form_data in action_formset.cleaned_data:
-                        start_date = form_data.get('start_date', None)
-                        end_date = form_data.get('end_date', None)
-                        start = form_data.get('start', False)
-                        action_type = form_data.get('action_type', None)
-                        if not(start_date and end_date and action_type and start):
-                            continue
-                        if start_date <= today <= end_date and start and not product.day_paid(action_type, today):
-                            to_pay += models.get_action_cost(action_type)
-        return JsonResponse({'to_pay': to_pay})
 
 
 class ProductChangeView(generic.TemplateView):

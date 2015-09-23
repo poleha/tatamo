@@ -1,4 +1,6 @@
 {% load staticfiles %}
+{% load compress %}
+{% compress js %}
 <script src='{% static "discount/js/history.js/scripts/bundled/html4+html5/jquery.history.js" %}'></script>
 <script>
     $(function() {
@@ -305,5 +307,4 @@ setDefaultOrderState();
     });
 
 </script>
-
-
+{% endcompress %}

@@ -36,7 +36,6 @@ def _suspend_expired_products():
             need_rework += 1
         with transaction.atomic():
                 product.save(do_clean=False, check_status=False)
-                product.prepare_product_account()
 
 
     message = '_suspend_expired_products: need_rework %s suspended %s' % (need_rework, suspended)
@@ -52,14 +51,12 @@ def _suspend_empty_products():
             product.status = models.STATUS_NEED_REWORK
             with transaction.atomic():
                 product.save()
-                product.prepare_product_account()
 
         elif product.stock_price <= 0:
             product.tatamo_comment = 'Автоматически сгенерированное сообщение: Некорректная цена'
             product.status = models.STATUS_NEED_REWORK
             with transaction.atomic():
                 product.save()
-                product.prepare_product_account()
 
     message = '_suspend_empty_products: need_rework %s' % (need_rework,)
     return message
@@ -71,22 +68,12 @@ def _start_ready_products():
 
 
     for product in products:
-        shop_active_products = product.shop.get_active_products(date=today, excluded_product=product)
-        active_subscription = product.shop.subscription_by_date(today)
-        if active_subscription.subscription_type.max_products > shop_active_products.count():
-            product.status = models.STATUS_PUBLISHED
-            if product.start_date < today:
-                product.start_date = today
-            with transaction.atomic():
-                product.save()
-                product.pay()
-                product.prepare_product_account()
-        else:
-            product.tatamo_comment = 'Автоматически сгенерированное сообщение: Превышено допустимое количество акций.'
-            product.status = models.STATUS_SUSPENDED
-            with transaction.atomic():
-                product.save()
-                product.prepare_product_account()
+        #shop_active_products = product.shop.get_active_products(date=today, excluded_product=product)
+        product.status = models.STATUS_PUBLISHED
+        if product.start_date < today:
+            product.start_date = today
+        with transaction.atomic():
+            product.save()
 
     message = '_start_ready_products: started %s' % (count,)
     return message
@@ -100,86 +87,12 @@ def _send_message_for_all_changed_products():
 
 #TODO send letters to unapproved mails
 
-def _start_stop_subscriptions():
-    today = get_today()
-    stopped = 0
-    started_continue = 0
-    started_planned = 0
-    total = 0
-
-    subscriptions_to_stop = models.Subscription.objects.filter(end_date__lt=today, status=models.SUBSCRIPTION_STATUS_ACTIVE)
-    for s in subscriptions_to_stop:
-        total += 1
-        s.status = models.SUBSCRIPTION_STATUS_INACTIVE
-        s.save()
-        stopped += 1
-        if s.auto_pay:
-            new_s = copy(s)
-            new_s.pk = None
-            new_s.start_date = today
-            new_s.set_end_date()
-            points_free = new_s.shop.points_free
-            if points_free >= new_s.subscription_type.price:
-                with transaction.atomic():
-                    new_s.status = models.SUBSCRIPTION_STATUS_ACTIVE
-                    new_s.save()
-                    models.Payment.subscription_type_pay(new_s.shop, new_s.user, new_s.subscription_type.price, new_s)
-                    models.Subscription.objects.filter(shop=s.shop, status=models.SUBSCRIPTION_STATUS_PLANNED).delete()
-                    started_continue += 1
-
-        else:
-            try:
-                planned = models.Subscription.objects.get(shop=s.shop, status=models.SUBSCRIPTION_STATUS_PLANNED)
-            except:
-                planned = None
-
-            if planned is not None:
-                if planned.shop.points_free >= planned.subscription_type.price:
-                    with transaction.atomic():
-                        planned.status = models.SUBSCRIPTION_STATUS_ACTIVE
-                        models.Payment.subscription_type_pay(planned.shop, planned.user, planned.subscription_type.price, planned)
-                        planned.save()
-                        started_planned += 1
-
-    message = '_start_stop_actions total:{0}, planned:{1}, continue: {2}, stopped: {3}'.\
-        format(total, started_planned, started_continue, stopped)
-    return message
-
-
-#@celery.decorators.periodic_task(run_every=crontab(minute=10, hour=[0]))
-def _payday():
-    today = get_today()
-    products = models.Product.objects.filter(
-                                            ~Q(actions__payment__period=today),
-                                             actions__start_date__lte=today,
-                                             actions__end_date__gte=today,
-                                             status=models.STATUS_PUBLISHED,
-                                             end_date__gte=today,
-                                             start_date__lte=today
-                                            )
-
-    #actions = models.ProductAction.objects.filter(~Q(transaction__period=today), product__status=models.STATUS_PUBLISHED,
-    #                                         end_date__gte=today)
-
-    count = 0
-    for product in products:
-        actions = product.actions.filter(~Q(payment__period=today), start_date__lte=today, end_date__gte=today)
-        if actions:
-            with transaction.atomic():
-                product.pay()
-                product.prepare_product_account()
-                count += 1
-    message = '_payday count %s' % (count,)
-    return message
-
 
 #TODO вернуть
 def _main_procedure():
     m0 = _suspend_expired_products()
     m1 = ''#_suspend_empty_products()
-    m2 = ''#_start_stop_subscriptions()
     m3 = _start_ready_products()
-    m4 = ''#_payday()
     message = '%s \n %s \n %s \n %s \n %s' % (m0, m1, m2, m3, m4)
     mail_admins('_main_procedure procedure is completed on Tatamo productive', message)
 
@@ -200,15 +113,7 @@ def send_message_for_all_changed_products():
     _send_message_for_all_changed_products()
 
 
-"""
-@celery.decorators.periodic_task(run_every=crontab(day_of_month=1, hour=[0], minute=45))
-def add_days_monthly():
-    _add_days_monthly()
-"""
 
-#@celery.task
-#def test_task():
-#    print('finished')
 
 
 def _admin_monitor():

@@ -1,5 +1,6 @@
 {% extends 'discount/base/base.html' %}
 {% load discount_tags %}
+{% load compress %}
 {% block content %}
     {% if status_text %}
     <label>Статус:</label>
@@ -188,6 +189,7 @@
 </form>
 
     <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  {% compress js %}
    <script>
 
   $(function() {
@@ -202,6 +204,6 @@
     });
   });
   </script>
-
+{% endcompress %}
 
 {% endblock content %}

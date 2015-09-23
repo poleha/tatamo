@@ -1,6 +1,7 @@
 {% extends 'discount/base/base.html' %}
 {% load discount_tags %}
 {% load polls_tags %}
+{% load compress %}
 
 {% block header %}
 {{ block.super }}
@@ -99,7 +100,7 @@
 
 
 
-
+{% compress js %}
 
 <script>
 	$(function() {
@@ -117,6 +118,6 @@
 
 
 </script>
-
+{% endcompress %}
 
 {% endblock content %}

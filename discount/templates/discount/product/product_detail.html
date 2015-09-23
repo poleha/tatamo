@@ -1,6 +1,7 @@
 {% extends 'discount/base/base.html' %}
 {% load discount_tags %}
 {% load cache %}
+{% load compress %}
 
 {% block content %}
   {% cache 2419200 product_detail_1 product.pk %}
@@ -180,24 +181,7 @@
 					{% endcomment %}
 
 						{% if manage_url %}
-				{% include 'discount/product/_product_detail_help.html' %}
 
-
-
-                    {% include 'discount/product/_product_actions_brief.html' %}
-
-           				<div class="admin-info">
-					<ul>
-						<li>Заблокировано средств <span>{{ product.points_blocked }}</span></li>
-						<li>Израсходовано средств <span>{{ product.points_spent }}</span></li>
-					</ul>
-
-						<form method="post" action="{% url 'discount:recreate-product-payments' product.pk %}">
-							{% csrf_token %}
-							<input type="submit" value="Пересчитать заблокированные средства">
-						</form>
-
-					</div>
 
                             	{% if users_subscribed %}
 						<div class="subscribed" id="subscribed-block">
@@ -235,11 +219,6 @@
                         </tr>
                         </table>
 							{% endif %}
-
-
-					{% product_payments product %}
-
-
 
                         {% endif %}
 
@@ -297,7 +276,7 @@
 
         </div>
 
-
+{% compress js %}
         <script>
            $(function() {
             $('#comment-button').click(function(){
@@ -352,7 +331,7 @@
 
            });
         </script>
-
+{% endcompress %}
         {% endblock content %}
 
         {% block sidebar_right %}

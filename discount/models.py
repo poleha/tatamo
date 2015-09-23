@@ -79,15 +79,7 @@ class TatamoModelMixin(models.Model):
         return v
 
 
-ACTION_TYPE_POPULAR = 1
-ACTION_TYPE_CATEGORY = 2
 
-ACTION_TYPES = ((ACTION_TYPE_POPULAR, 'Спецразмещение'), (ACTION_TYPE_CATEGORY, 'Категории'))
-
-PAY_STATUS_OK = 1
-PAY_STATUS_ERROR = 2
-PAY_STATUS_REPEATED = 3
-PAY_STATUS_NOT_ACTIVE_ON_DAY = 4
 
 PRICE_CATEGORY_1 = 1
 PRICE_CATEGORY_2 = 2
@@ -562,45 +554,21 @@ class ProductType(AbstractModel, AbstractModelBodyMixin, AbstractProductStorage)
             from math import fabs
 
             today = get_today()
-            # actions = ProductAction.objects.filter()
 
             max_number = settings.MAX_CATEGORY_COUNT
             available_products_pks = self.available_products_pks
             all_products_pks = self.all_products_pks
 
 
-
-            #if today < settings.START_DATE:
-            #    products = Product.objects.none()
-            #else:
-            products = Product.objects.filter(actions__action_type=ACTION_TYPE_CATEGORY, actions__start_date__lte=today,
-            actions__end_date__gte=today, pk__in=available_products_pks).distinct()[:max_number]
-
-            existing_pks = list(products.values_list('pk', flat=True))
-            count = products.count()
-            lack = int(fabs(max_number - count))
-            for product in products:
+            #TODO переделать в продуктиве
+            additional_products = Product.objects.filter(pk__in=available_products_pks)
+            additional_products = list(additional_products)
+            shuffle(additional_products)
+            additional_products = additional_products[:max_number]
+            #additional_products = filter_popular_products(additional_products, lack)
+            for product in additional_products:
                 favourites.append(product)
 
-
-
-
-            #TODO переделать в продуктиве
-            if lack > 0:
-                additional_products = Product.objects.filter(pk__in=available_products_pks).exclude(pk__in=existing_pks)
-                additional_products = list(additional_products)
-                shuffle(additional_products)
-                additional_products = additional_products[:lack]
-                #additional_products = filter_popular_products(additional_products, lack)
-                for product in additional_products:
-                    favourites.append(product)
-
-            #if lack > 0:
-            #    ad_products = Product.objects.filter(pk__in=all_products_pks, ad=True)[:lack]
-            #    count += ad_products.count()
-            #    lack = fabs(max_number - count)
-            #    for product in ad_products:
-            #        favourites.append(product)
 
             cache.set(key, favourites, 60 * 30)
         shuffle(favourites)
@@ -787,50 +755,6 @@ class ProductStorageMixin(TatamoModelMixin):
 """
 
 
-class PaymentShopMixin(TatamoModelMixin):
-    class Meta:
-        abstract = True
-
-    @property
-    def points_total(self):
-        try:
-            points = Payment.objects.filter(shop=self).aggregate(Sum('points'))['points__sum']
-            if points is None:
-                points = 0
-        except:
-            points = 0
-        return points
-
-    @property
-    def points_blocked(self):
-        try:
-            points = abs(int(ProductAction.objects.filter(product__shop=self).aggregate(Sum('points_blocked'))[
-                                 'points_blocked__sum']))
-        except:
-            points = 0
-        return points
-
-    @property
-    def points_spent(self):
-        try:
-            points = \
-                Payment.objects.filter(shop=self, operation=PAYMENT_OPERATION_DECREASE).aggregate(Sum('points'))[
-                    'points__sum']
-            if points is None:
-                points = 0
-        except:
-            points = 0
-        return points
-
-    @property
-    def points_free(self):
-        return self.points_total - self.points_blocked
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        # self.prepare_shop_account()
-
-
 class ShopQueryset(models.QuerySet):
     def filter(self, *args, **kwargs):
         queryset = super().filter(*args, **kwargs)
@@ -859,7 +783,7 @@ class ShopManager(BaseManager.from_queryset(ShopQueryset)):
         return queryset
 
 
-class Shop(AbstractModel, AbstractModelBodyMixin, PaymentShopMixin, AbstractProductStorage, AbstractHashMixin):
+class Shop(AbstractModel, AbstractModelBodyMixin, AbstractProductStorage, AbstractHashMixin):
     class Meta:
         ordering = ['title']
 
@@ -891,20 +815,6 @@ class Shop(AbstractModel, AbstractModelBodyMixin, PaymentShopMixin, AbstractProd
     tatamo_comment = models.TextField(blank=True, verbose_name='Комментарий Tatamo', default='')
     add_brands = models.TextField(blank=True, verbose_name='Добавление брендов', default='')
     objects = ShopManager()
-
-    @property
-    def free_subscription_available(self):
-        today = get_today()
-        try:
-            recent_created = self.subscription_set.filter(subscription_type__price=0).latest('created').start_date
-        except:
-            recent_created = today - timezone.timedelta(days=365)
-
-        if (today - recent_created).days < settings.REPEATED_FREE_SUBSCRIPTION_INTERVAL:
-            return False
-        else:
-            return True
-
 
     @property
     def get_link(self):
@@ -978,43 +888,6 @@ class Shop(AbstractModel, AbstractModelBodyMixin, PaymentShopMixin, AbstractProd
         return ps
 
     @property
-    def active_subscription(self):
-        today = get_today()
-        try:
-            s = Subscription.objects.get(shop=self, start_date__lte=today, end_date__gte=today,
-                                         status=SUBSCRIPTION_STATUS_ACTIVE)
-        except:
-            s = None
-        return s
-
-    @property
-    def planned_subscription(self):
-        try:
-            s = Subscription.objects.get(shop=self, status=SUBSCRIPTION_STATUS_PLANNED)
-        except:
-            s = None
-        return s
-
-    def subscription_by_date(self, date):
-        try:
-            s = Subscription.objects.get(shop=self, start_date__lte=date, end_date__gte=date)
-        except:
-            s = None
-        return s
-
-    def day_is_available(self, date, excluded_product=None):
-        active_subs = self.active_subscription
-        if active_subs and active_subs.auto_pay:
-            subs = active_subs
-        else:
-            subs = self.subscription_by_date(date)
-        active_products_count = self.get_active_products(date, excluded_product=excluded_product).count()
-        if subs and subs.max_products > active_products_count:
-            return True
-        else:
-            return False
-
-    @property
     def emails(self):
         emails = []
         for stu in self.shopstousers_set.all():
@@ -1032,19 +905,6 @@ class Shop(AbstractModel, AbstractModelBodyMixin, PaymentShopMixin, AbstractProd
         return self.products.filter(status=STATUS_PROJECT).count()
 
 
-
-    def get_busy_days(self, start_date, end_date, excluded_product=None):
-        busy_days = []
-        days = (end_date - start_date).days
-        for day in range(0, days + 1):
-            cur_date = start_date + timezone.timedelta(days=day)
-            if not self.day_is_available(cur_date, excluded_product):
-                busy_days.append(cur_date)
-        if busy_days:
-            return busy_days
-        else:
-            None
-
     def check_status(self):
         new_status = self.status
         if self.pk:
@@ -1057,7 +917,6 @@ class Shop(AbstractModel, AbstractModelBodyMixin, PaymentShopMixin, AbstractProd
         elif status in [SHOP_STATUS_TO_APPROVE, SHOP_STATUS_PUBLISHED, SHOP_STATUS_NEED_REWORK]:
             if new_status == SHOP_STATUS_PROJECT:
                 raise ValidationError('Данные магазина были изменены и сохранение невозможно.')
-
 
 
     def clean(self):
@@ -1299,96 +1158,6 @@ def get_sum_for_action_type(shop, action_type):
 """
 
 
-class PaymentProductMixin:
-
-    @property
-    def actions_overlap(self):
-        return any(ProductAction.actions_overlap(self.actions.all()).values())
-
-    def to_pay_in_day(self, period=None): #Теоретически, для кнопки. Без проверки на действующий
-        to_pay = 0
-        if period is None:
-            period = get_today()
-        actions = self.get_unpaid_actions(period)
-        for action in actions:
-            to_pay += action.to_pay_in_day(period)
-        return to_pay
-
-    @property
-    def to_pay_tomorrow(self):
-        tomorrow = get_today() + timezone.timedelta(days=1)
-        return self.to_pay_in_day(tomorrow)
-
-
-    @property
-    def points_blocked(self):
-        try:
-            points = ProductAction.objects.filter(product=self).aggregate(Sum('points_blocked'))['points_blocked__sum']
-            if points is None:
-                points = 0
-        except:
-            points = 0
-        return points
-
-    @property
-    def points_spent(self):
-        try:
-            sp = Payment.objects.filter(product=self).aggregate(Sum('points'))['points__sum']
-            if sp is None:
-                sp = 0
-        except:
-            sp = 0
-        return abs(sp)
-
-    def day_paid(self, action_type, period=None):
-        if period is None:
-            today = get_today()
-            period = today
-        return Payment.objects.filter(product=self, period=period, action_type=action_type).exists()
-
-    def any_day_of_interval_paid(self, action_type, start_date, end_date):
-        return Payment.objects.filter(product=self, period__gte=start_date, period__lte=end_date,
-                                          action_type=action_type).exists()
-
-    def get_unpaid_actions(self, period=None):
-        if period is None:
-            period = get_today()
-        actions = self.actions.filter(~Q(payment__period=period), start_date__lte=period, end_date__gte=period, start=True)
-        return actions
-
-
-
-    def pay(self, period=None):
-        self.prepare_product_account()
-        today = get_today()
-        if self.status == STATUS_PUBLISHED:
-            if period is None:
-                period = today
-            if self.to_pay_in_day() <= self.shop.points_free + self.points_blocked:
-                actions = self.get_unpaid_actions()
-                for action in actions:
-                    if not self.day_paid(action_type=action.action_type, period=period):  # Перестраховка, вдруг акция былп удалена и создана новая, но старую оплатити
-                        action.pay(period=period)
-
-    @property
-    def points_required(self):
-        points = 0
-        for action in self.actions.filter(start=True):
-            points += action.points_required
-        return points
-
-
-    def prepare_product_account(self):
-        points_available = self.points_blocked + self.shop.points_free
-        points_required = self.points_required
-        if points_required > points_available:
-            lack = points_required - points_available
-            raise MoneyExeption('Недостаточно средств. Нужно дополнительно {}'.format(lack))
-        actions = ProductAction.objects.filter(product=self)
-        for action in actions:
-            action.save()
-
-
 
 class ProductChanger(TatamoModelMixin, AbstractHashMixin):
     title = models.CharField(max_length=500, blank=True, verbose_name='Название', default='')
@@ -1503,7 +1272,7 @@ class ProductChanger(TatamoModelMixin, AbstractHashMixin):
 
 import string
 # from django.forms.models import model_to_dict
-class Product(PaymentProductMixin, TatamoModelMixin, ProductVersionMixin, AbstractHashMixin, AbstractStripTitleMixin):
+class Product(TatamoModelMixin, ProductVersionMixin, AbstractHashMixin, AbstractStripTitleMixin):
     class Meta:
         index_together = [
             ["status", "ad"],
@@ -1542,6 +1311,7 @@ class Product(PaymentProductMixin, TatamoModelMixin, ProductVersionMixin, Abstra
     simple_code = models.CharField(max_length=100, verbose_name='Код акции', blank=True)
     use_simple_code = models.BooleanField(default=False, blank=True, verbose_name='Сгенерировать промокод вручную')
     use_code_postfix = models.BooleanField(default=True, blank=True, verbose_name='Использовать постфикс для промокода')
+    no_code_required = models.BooleanField(default=False, blank=True, verbose_name='Для получения скидки не нужен промокод')
 
     percent = models.PositiveIntegerField(verbose_name='Скидка')
     price_category = models.IntegerField(choices=PRICE_CATEGORIES)
@@ -1885,8 +1655,6 @@ class Product(PaymentProductMixin, TatamoModelMixin, ProductVersionMixin, Abstra
         if not self.shop.status == SHOP_STATUS_PUBLISHED:
             errors.append(NON_FIELD_ERRORS, 'Пожалуйста, дождитесь согласования информации о магазине')
 
-        if self.actions_overlap:
-            errors.append(NON_FIELD_ERRORS, 'Интервалы спецпредложений пересекаются')
 
         if self.start_date < settings.START_DATE:
             errors.append('start_date', 'Акция не может начаться раньше, чем {0}'.format(settings.START_DATE))
@@ -1901,29 +1669,6 @@ class Product(PaymentProductMixin, TatamoModelMixin, ProductVersionMixin, Abstra
 
         if self.stock_price and self.normal_price and self.stock_price >= self.normal_price:
             errors.append(NON_FIELD_ERRORS, 'Цена по акции должна быть ниже обычной цены')
-
-        status = self.status
-        shop = self.shop
-        if status in [STATUS_PUBLISHED, STATUS_READY]:
-            subs = shop.active_subscription
-            if not subs:
-                errors.append(NON_FIELD_ERRORS, 'Нет активной подписки')
-
-            else:
-                start_date = self.start_date
-                end_date = self.end_date
-                if start_date and end_date:
-                    if start_date < today:
-                        start_date_to_check = today
-                    else:
-                        start_date_to_check = start_date
-                    busy_days = shop.get_busy_days(start_date_to_check, end_date, excluded_product=self)
-                    if busy_days:
-                        busy_days = ','.join(format(bd.strftime("%d.%m.%Y")) for bd in busy_days)
-                        if len(busy_days) > 120:
-                            busy_days = busy_days[:120] + '...'
-                        if busy_days:
-                            errors.append(NON_FIELD_ERRORS, 'Превышено допустимое количество акций для текущей подписки {0}'.format(busy_days))
 
         if errors.errors:
             raise ValidationError(errors.errors)
@@ -1962,14 +1707,6 @@ class Product(PaymentProductMixin, TatamoModelMixin, ProductVersionMixin, Abstra
 
             old_instance = self.saved_version
 
-            if self.status in [STATUS_PUBLISHED, STATUS_READY]:
-                busy_days = self.shop.get_busy_days(self.start_date, self.end_date, excluded_product=self)
-                if busy_days:
-                    self.tatamo_comment = 'Автоматически сгенерированной сообщение. Превышено допустимое количество акций по действующей подписке'
-                    if do_clean:
-                        self.status = STATUS_SUSPENDED
-
-
             super().save(*args, **kwargs)
             self.apply_storage_params(saved_version) #TODO лучше сделать перед записью, сейчас много лишних сохранений
 
@@ -1982,12 +1719,7 @@ class Product(PaymentProductMixin, TatamoModelMixin, ProductVersionMixin, Abstra
                 th.product = self
                 th.save()
 
-            for action in self.actions.filter(start=True):
-                action.save()
-
-            #self.pay()
             self.clear_cache()
-            self.prepare_product_account()
 
             #Приостановим действующие подписки
             if self.status == STATUS_SUSPENDED:
@@ -2043,30 +1775,6 @@ class Product(PaymentProductMixin, TatamoModelMixin, ProductVersionMixin, Abstra
             for elem in set(elems):
                 elem.save_product_storage_elem()
 
-    """
-    def apply_product_type_params(self):
-        old_pt = ModelHistory.get_version_by_date(self, timezone.now()).object.product_type
-
-        pts = self.product_type.get_all_elements_to_save() +[self.product_type]
-        if not old_pt.pk == self.product_type.pk:
-            pts += old_pt.get_all_elements_to_save() + [old_pt]
-
-        for pt in set(pts):
-            all_products_pks = Product.objects.filter(product_type__in=pt.get_all_childs_with_self()).distinct().values_list('pk', flat=True)
-            available_products_pks = Product.objects.filter(pk__in=all_products_pks).get_available_products().values_list('pk', flat=True)
-            all_products_count = len(all_products_pks)
-            available_products_count = len(available_products_pks)
-            pt.all_products_pks = json.dumps(list(all_products_pks))
-            pt.available_products_pks = json.dumps(list(available_products_pks))
-            pt.all_products_count = all_products_count
-            pt.available_products_count = available_products_count
-            pt.save(auto=True)
-    """
-
-    # TODO
-    # После записи опубликованной акции платим за нее. Хорошо бы сделать в транзакции
-    # if self.status == STATUS_PUBLISHED:
-    #    Payment.payday(self, period, commit=True)
     @property
     def status_text(self):
         if self.status == STATUS_PROJECT:
@@ -2235,334 +1943,6 @@ class RelatedProduct(TatamoModelMixin):
     product = models.ForeignKey('Product', verbose_name='Акция', related_name='related_products')
     related_product = models.ForeignKey('Product', verbose_name='Связанная акция', related_name='products')
 
-
-
-class ProductAction(TatamoModelMixin):
-    product = models.ForeignKey(Product, related_name='actions')
-    action_type = models.PositiveIntegerField(choices=ACTION_TYPES, verbose_name='Вид специального размещения')
-    start_date = models.DateField(verbose_name='Дата начала', db_index=True)
-    end_date = models.DateField(verbose_name='Дата окончания', db_index=True)
-    banner = models.ForeignKey('ProductBanner', verbose_name='Баннер', null=True, blank=True)
-    created = models.DateTimeField(auto_now_add=True)
-    points_blocked = models.PositiveIntegerField(default=0, blank=True)
-    status = models.IntegerField(choices=ACTION_STATUSES, verbose_name='Статус', default=ACTION_STATUS_PROJECT)
-    start = models.BooleanField(verbose_name='Подтвердить', default=False)
-    # def generate_product_action_transactions(self):
-    #    self.delete_unused_transactions()
-    #    if self.product.has_active_status:
-    #        self.generate_action_transactions()
-
-
-
-    def to_pay_in_day(self, period=None): #Теоретически, без проверок! Для информации.
-        if period is None:
-            period = get_today()
-        to_pay = 0
-        if self.start_date <= period <= self.end_date and self.start:
-            paid = self.day_paid(period)
-            if not paid:
-                to_pay = get_action_cost(self.action_type)
-        return to_pay
-
-    @property
-    def last_paid_day(self):
-        try:
-            last_t = self.payment_set.filter(product_action=self).filter().latest('period')
-        except:
-            last_t = None
-        if last_t:
-            period = last_t.period
-        else:
-            period = None
-        return period
-
-    def block_points(self):
-        with transaction.atomic():
-            shop_payments = Payment.objects.select_for_update().filter(shop=self.product.shop)
-            points_required = self.points_required
-            points_available = self.product.shop.points_free + self.points_blocked
-            if points_available >= points_required:
-                if not self.points_blocked == points_required:
-                    #self.fix_before_save()
-                    self.points_blocked = points_required
-            else:
-                raise MoneyExeption('Недостаточно средств')
-            #self.save()
-
-
-    def clean(self):
-        super().clean()
-        errors = ErrorDict()
-
-
-        if self.pk:
-            now_model = type(self).objects.get(pk=self.pk)
-        else:
-            now_model = self
-
-        today = get_today()
-
-        if self.action_type == ACTION_TYPE_POPULAR and not self.banner:
-            errors.append('banner', 'Для размещения на главной странице в разделе Спецразмещение наобходим согласованный баннер')
-
-        #if self.start_date == today and self.start
-
-        if self.start_date and self.end_date:
-            if self.points_spent > 0 and not self.start_date == now_model.start_date:
-                errors.append('start_date', 'Нельзя поменять дату начала у начавшейся акции')
-
-            if self.end_date < self.start_date:
-                errors.append('end_date', 'Размещение не может закончиться раньше, чем начнется')
-            if self.end_date < today:
-                if not self.status in [ACTION_STATUS_PROJECT, ACTION_STATUS_FINISHED]:
-                    errors.append('end_date', 'Размещение не может закончиться раньше, чем сегодня')
-
-
-            last_paid_day = self.last_paid_day
-            if last_paid_day and self.end_date < self.last_paid_day:
-                errors.append('end_date', 'Размещение не может закончиться раньше последнего оплаченного дня: {0}'.format(last_paid_day))
-
-
-            if self.interval_is_busy:
-                errors.append(NON_FIELD_ERRORS, 'Извините, места для размещения заняты в этот период')
-
-        else:
-            errors.append(NON_FIELD_ERRORS, 'Дата начала и дата окончания акции обязательны к заполнению')
-
-        #***
-
-
-        #********
-        if errors.errors:
-            raise ValidationError(errors.errors)
-
-
-    @property
-    def interval_is_busy(self):
-        free_count_days_ordered_dict = get_actions_count_for_interval(self.action_type, self.start_date, self.end_date, category=self.product.product_type.get_top_parent())
-        if len(free_count_days_ordered_dict) > 0:
-            current_min = min(free_count_days_ordered_dict.values())
-            if current_min <= 0:
-                return True
-            else:
-                return False
-        else:
-            return False
-
-    def fix_before_save(self):
-        try:
-            old_model = type(self).objects.get(pk=self.pk)
-        except:
-            old_model = self
-
-        today = get_today()
-
-        if self.start_date < self.product.start_date:
-            self.start_date = self.product.start_date
-
-        if self.end_date > self.product.end_date:
-            self.end_date = self.product.end_date
-
-        if self.product.status == STATUS_FINISHED:
-            self.status = ACTION_STATUS_FINISHED
-        else:
-            if self.points_spent > 0:
-
-                if self.end_date < today:
-                    self.status = ACTION_STATUS_FINISHED
-                elif self.end_date >= today:
-                    if self.product.status == STATUS_PUBLISHED:
-                        self.status = ACTION_STATUS_ACTIVE
-                    else:
-                        self.status = ACTION_STATUS_PAUSED
-            elif self.points_spent == 0:
-                if self.start_date < today:
-                    self.start_date = today
-                if self.end_date < today:
-                    self.end_date = today
-
-                if self.start and self.start_date >= today:
-                    self.status = ACTION_STATUS_PLANNED
-                if not self.start:
-                    self.status = ACTION_STATUS_PROJECT
-
-    def save(self, *args, **kwargs):
-        with transaction.atomic():
-            shop_payments = Payment.objects.select_for_update().filter(shop=self.product.shop)
-            self.fix_before_save()
-            self.full_clean()
-            self.block_points()
-            super().save(*args, **kwargs)
-            if self.product.actions_overlap:
-                raise ValidationError('Интервалы спецпредложений пересекаются')
-
-    @property
-    def points_required(self):
-        if self.status in [ACTION_STATUS_ACTIVE, ACTION_STATUS_PLANNED, ACTION_STATUS_PAUSED]:
-            cost = get_action_cost(self.action_type) * self.days_unpaid_count
-        else:
-            cost = 0
-        return cost
-
-    def _points_required(self, start_date, end_date):
-        return self._days_unpaid_count(start_date, end_date) * get_action_cost(self.action_type)
-
-
-    @property
-    def days_paid_count(self):
-        return self._days_paid_count(self.start_date, self.end_date)
-
-
-    def _days_paid_count(self, start_date, end_date):
-        return self.payment_set.filter(period__gte=start_date, period__lte=end_date).count()
-
-    @property
-    def days_unpaid_count(self):
-        return self._days_unpaid_count(self.start_date, self.end_date)
-        #today = get_today()
-        #start_date = max(self.start_date, today)
-        #days_total = (self.end_date - start_date).days + 1
-        #unpaid_days = days_total - self.days_paid_count
-        #return unpaid_days
-
-    def _days_unpaid_count(self, start_date, end_date):
-        today = get_today()
-        start_date = max(start_date, today)
-        days_total = (end_date - start_date).days + 1
-        unpaid_days = days_total - self._days_paid_count(start_date, end_date)
-        return unpaid_days
-
-    @property
-    def points_spent(self):
-        if self.pk:
-            res = self.payment_set.aggregate(Sum('points'))['points__sum']
-            if res is None:
-                res = 0
-        else:
-            res = 0
-
-        return abs(res)
-
-    def day_paid(self, period=None):
-        if period is None:
-            period = get_today()
-        return self.payment_set.filter(period=period).exists()
-
-    def pay(self, period=None):
-        if period is None:
-            period = get_today()
-        with transaction.atomic():
-            shop_payments = Payment.objects.select_for_update().filter(shop=self.product.shop)
-            if self.product.actions_overlap:
-                raise ValidationError('Интервалы спецпредложений пересекаются')
-            if period is None:
-                period = get_today()
-            if self.pk and self.start and self.product.status == STATUS_PUBLISHED and self.end_date >= period and \
-                            self.start_date <= period and self.product.start_date <= period \
-                    and self.product.end_date >= period:
-                points_available = self.points_blocked + self.product.shop.points_free
-                points_total = self.product.shop.points_total
-                points_per_day = get_action_cost(self.action_type)
-                if not self.day_paid(
-                        period=period):  # Перестраховка, вдруг акция былп удалена и создана новая, но старую оплатити
-                    t = Payment(product=self.product, period=period, action_type=self.action_type, product_action=self,
-                                    operation=PAYMENT_OPERATION_DECREASE, user=get_payment_user())
-                    if points_available >= points_per_day and points_total >= points_per_day:
-                        t.points = -points_per_day
-                        t.save()
-                        self.status = ACTION_STATUS_ACTIVE
-                        #self.block_points()
-                    else:
-                        raise MoneyExeption('Недостаточно средств')
-
-                self.save()
-
-    @property
-    def status_text(self):
-        if self.status == ACTION_STATUS_ACTIVE:
-            text = 'Действует'
-        elif self.status == ACTION_STATUS_PROJECT:
-            text = 'Проект'
-        elif self.status == ACTION_STATUS_PLANNED:
-            text = 'Запланирована'
-        elif self.status == ACTION_STATUS_FINISHED:
-            text = 'Завершена'
-        elif self.status == ACTION_STATUS_PAUSED:
-            text = 'Приостановлена'
-        else:
-            text = 'Проект'
-        return text
-
-    @property
-    def action_type_text(self):
-        if self.action_type == ACTION_TYPE_POPULAR:
-            return 'Размещение на главной странице в разделе Спецразмещение'
-        elif self.action_type == ACTION_TYPE_CATEGORY:
-            return 'Размещение на главной странице в разделе Категории'
-        else:
-            return ""
-
-    #TODO может использовать все же?
-    @staticmethod
-    def overlap_number(actions):
-        length = len(actions)
-        overlaps = {}
-
-        if length <= 1:
-            overlaps[0] = length
-        else:
-            for i in range(length):
-                overlaps_cur = 0
-                for j in range(i+1, length):
-                    max_start = max(actions[i].start_date, actions[j].start_date)
-                    min_end = min(actions[i].end_date, actions[j].end_date)
-                    if min_end >= max_start:
-                        overlaps_cur += 1
-                if not overlaps_cur in overlaps:
-                    overlaps[overlaps_cur] = 0
-                overlaps[overlaps_cur] += 1
-        return overlaps
-
-    @staticmethod
-    def overlap_exists(actions, number):
-        overlaps = ProductAction.overlap_number(actions)
-        keys = (k for k in overlaps.keys() if k >= (number - 1))
-        for k in keys:
-            if overlaps[k] >= (number - 1):
-                return True
-        return False
-
-
-
-    @staticmethod
-    def actions_overlap(actions):
-        res = {}
-        actions_dict = {}
-        for action in actions:
-            if action.action_type not in actions_dict:
-                actions_dict[action.action_type] = []
-            actions_dict[action.action_type].append(action)
-
-        for action_type, actions in actions_dict.items():
-            res[action_type] = False
-            length = len(actions)
-            if length > 1:
-                for i in range(length):
-                    if res[action_type] == True:
-                        break
-                    for j in range(i+1, length):
-                        max_start = max(actions[i].start_date, actions[j].start_date)
-                        min_end = min(actions[i].end_date, actions[j].end_date)
-                        if min_end >= max_start:
-                            res[action_type] = True
-                            break
-        return res
-
-"""
-class ProductAccount(TatamoModelMixin):
-    product = models.OneToOneField(Product, related_name='product_account')
-    points_blocked = models.IntegerField(default=0, blank=True)
-"""
 
 
 class ShopsToUsers(TatamoModelMixin):
@@ -3374,10 +2754,6 @@ AnonymousUser.is_simple_user = True
 
 # AnonymousUser.get_active_shop = lambda self: None
 
-def get_payment_user():
-    user = User.objects.get(pk=settings.PAYMENT_USER_ID)
-    return user
-
 
 class MenuItem:
     def __init__(self, cls=None, id=None, href=None, title=None, url_name=None):
@@ -3484,135 +2860,6 @@ class MenuItem:
 
 # <<<<<<<<<<<<<Money
 
-# MONEY_PER_DAY = 100
-
-# TODO переделать все так.
-PAYMENT_OPERATION_INCREASE = 1
-PAYMENT_OPERATION_DECREASE = 2
-
-PAYMENT_OPERATIONS = (
-    (PAYMENT_OPERATION_INCREASE, 'Пополнение'),
-    (PAYMENT_OPERATION_DECREASE, 'Расход'),
-)
-
-
-# ACTION_TYPES_FOR_TRANSACTION = ((ACTION_TYPE_BASE, 'Базовое размещение'), (ACTION_TYPE_POPULAR, 'Размещение на главной'))
-
-
-def get_action_cost(action_type):
-    if action_type == ACTION_TYPE_POPULAR:
-        return settings.ACTION_TYPE_POPULAR_COST
-    elif action_type == ACTION_TYPE_CATEGORY:
-        return settings.ACTION_TYPE_CATEGORY_COST
-
-
-class Payment(TatamoModelMixin):
-    shop = models.ForeignKey(Shop)
-    created = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(User)
-    points = models.IntegerField()
-    operation = models.IntegerField(choices=PAYMENT_OPERATIONS)
-    comment = models.TextField(blank=True, default='')
-    product = models.ForeignKey(Product, null=True, blank=True)
-    period = models.DateField(blank=True)
-    # money = models.IntegerField(default=0, blank=True)
-    action_type = models.IntegerField(choices=ACTION_TYPES, null=True, blank=True)
-    product_action = models.ForeignKey('ProductAction', null=True, blank=True)
-    subscription = models.ForeignKey('Subscription', null=True, blank=True)
-    subscription_type = models.ForeignKey('SubscriptionType', null=True, blank=True)
-
-    def __str__(self):
-        return '{0}'.format(self.period)
-
-    @property
-    def action_text(self):
-        if self.action_type == ACTION_TYPE_POPULAR:
-            return 'Размещение на главной странице в разделе Спецразмещение'
-        elif self.action_type == ACTION_TYPE_CATEGORY:
-            return 'Размещение на главной странице в разделе Категории'
-        else:
-            return ""
-
-    @property
-    def get_comment(self):
-        if self.action_type:
-            return self.action_text
-        elif self.subscription_type:
-            return 'Оформление подписки - {0}'.format(self.subscription_type)
-        elif self.comment:
-            return self.comment
-        else:
-            return ''
-
-    @cached_property
-    def operation_text(self):
-        if self.operation == PAYMENT_OPERATION_INCREASE:
-            return 'Пополнение'
-        elif self.operation == PAYMENT_OPERATION_DECREASE:
-            return 'Расход'
-        else:
-            return None
-
-    @staticmethod
-    def increase(shop, user, points):
-        created = timezone.now()
-        period = get_today()
-        t = Payment(shop=shop, user=user, points=points, operation=PAYMENT_OPERATION_INCREASE, period=period,
-                        created=created)
-        t.save()
-
-    @staticmethod
-    def subscription_type_pay(shop, user, points, subscription):
-        subscription_type = subscription.subscription_type
-        created = timezone.now()
-        period = get_today()
-        if shop.points_free >= points:
-            t = Payment(shop=shop, user=user, points=-points, subscription=subscription,
-                            subscription_type=subscription_type, operation=PAYMENT_OPERATION_DECREASE,
-                            period=period, created=created)
-            t.save()
-        else:
-            raise MoneyExeption
-
-    def save(self, *args, **kwargs):
-        today = get_today()
-        if not self.period:
-            self.period = today
-
-        if not hasattr(self, 'user') or not self.user:
-            self.user = User.objects.get(pk=settings.PAYMENT_USER_ID)
-        if not hasattr(self, 'shop') or not self.shop:
-            self.shop = self.product.shop
-        if not self.pk and self.operation == PAYMENT_OPERATION_DECREASE:
-            points_available = self.shop.points_total
-            if points_available < self.points:
-                raise MoneyExeption('Недостаточно средств')
-
-        super().save(*args, **kwargs)
-
-
-        # Money>>>>>>>>>>>>>>>>>>>>
-
-# <<<<<<<<<<<<<<<<<<<<Actions
-
-"""
-def shop_confirm_transaction_adder(sender, instance, created, **kwargs):
-    transaction_exists = Payment.objects.filter(shop=instance, operation=PAYMENT_OPERATION_INCREASE).exists()
-    if instance.user is None:
-        try:
-            user = list(instance.users.filter(shopstousers__confirmed=True))[0]
-        except:
-            user = None
-    else:
-        user = instance.user
-
-    if not transaction_exists and instance.status == SHOP_STATUS_PUBLISHED and user is not None:
-        Payment.increase(shop=instance, user=user, days=15, money=0)
-
-
-post_save.connect(shop_confirm_transaction_adder, sender=Shop)
-"""
-
 
 # Actions>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -3629,149 +2876,6 @@ def filter_popular_products(queryset, limit=10):
     return queryset
 
 
-SUBSCRIPTION_PERIOD_TYPE_DAY = 1
-SUBSCRIPTION_PERIOD_TYPE_MONTH = 2
-SUBSCRIPTION_PERIOD_TYPE_YEAR = 3
-
-SUBSCRIPTION_PERIOD_TYPES = (
-    (SUBSCRIPTION_PERIOD_TYPE_DAY, 'По дням'),
-    (SUBSCRIPTION_PERIOD_TYPE_MONTH, 'Календарный месяц'),
-    (SUBSCRIPTION_PERIOD_TYPE_YEAR, 'Календарный день'),
-
-)
-
-
-class SubscriptionType(TatamoModelMixin):
-    title = models.CharField(max_length=100)
-    period_points = models.PositiveIntegerField()
-    max_products = models.PositiveIntegerField()
-    available = models.BooleanField(default=True)
-    price = models.PositiveIntegerField()
-    period_type = models.IntegerField(choices=SUBSCRIPTION_PERIOD_TYPES)
-
-    @property
-    def period_text(self):
-        period_points = self.period_points
-        period_type = self.period_type
-        if period_type == SUBSCRIPTION_PERIOD_TYPE_DAY:
-            if period_points == 1:
-                text = 'день'
-            elif period_points <= 4:
-                text = 'дня'
-            else:
-                text = 'дней'
-        elif period_type == SUBSCRIPTION_PERIOD_TYPE_MONTH:
-            text = 'месяц'
-        elif period_type == SUBSCRIPTION_PERIOD_TYPE_YEAR:
-            text = 'год'
-
-        return text
-
-    def __str__(self):
-        return self.title
-
-    @cached_property
-    def url(self):
-        return reverse('discount:subscription-type-detail', kwargs={'pk': self.pk})
-
-    @cached_property
-    def link(self):
-
-        return format_html("<a href=\"{0}\">{1}</a>".format(self.url, self.title))
-
-    @property
-    def days(self):
-        if self.period_type == SUBSCRIPTION_PERIOD_TYPE_DAY:
-            return self.period_points
-        elif self.period_type == SUBSCRIPTION_PERIOD_TYPE_MONTH:
-            return self.period_points * 30
-        elif self.period_type == SUBSCRIPTION_PERIOD_TYPE_YEAR:
-            return self.period_points * 365
-
-    def get_additional_price(self, subscription):
-        if subscription is None:
-            return self.price
-        else:
-            price = self.price - subscription.unused_price
-            if price >= 0:
-                return price
-            else:
-                return None
-
-
-SUBSCRIPTION_STATUS_INACTIVE = 1
-SUBSCRIPTION_STATUS_ACTIVE = 2
-SUBSCRIPTION_STATUS_PLANNED = 3
-SUBSCRIPTION_STATUS_CANCELLED = 4
-SUBSCRIPTION_STATUSES = (
-    (SUBSCRIPTION_STATUS_INACTIVE, 'Завершена'),
-    (SUBSCRIPTION_STATUS_ACTIVE, 'Активна'),
-    (SUBSCRIPTION_STATUS_PLANNED, 'Запланирована'),
-    (SUBSCRIPTION_STATUS_CANCELLED, 'Отменена'),
-)
-
-
-class Subscription(TatamoModelMixin):
-    created = models.DateTimeField(auto_now_add=True)
-    start_date = models.DateField('Дата начала действия', null=True, blank=True, db_index=True)
-    end_date = models.DateField('Действует до', null=True, blank=True, db_index=True)
-    user = models.ForeignKey(User, db_index=True)
-    shop = models.ForeignKey(Shop, db_index=True)
-    subscription_type = models.ForeignKey(SubscriptionType)
-    # status = models.IntegerField(Choices=SUBSCRIPTION_STATUSES)
-    # max_products = models.PositiveIntegerField(db_index=True) # Для скорости, хотя и дублирует SubscriptionType
-    status = models.IntegerField(choices=SUBSCRIPTION_STATUSES, default=SUBSCRIPTION_STATUS_ACTIVE, db_index=True)
-    auto_pay = models.BooleanField(default=False)
-
-    @cached_property
-    def max_products(self):
-        return self.subscription_type.max_products
-
-
-    def __str__(self):
-        return '{0}->{1}->{2}->{3}->{4}'.format(self.shop.title, self.start_date, self.end_date,
-                                                self.subscription_type.title, self.subscription_type.max_products)
-
-    def save(self, *args, **kwargs):
-        if self.status == SUBSCRIPTION_STATUS_PLANNED or self.auto_pay:
-            Subscription.objects.filter(shop=self.shop, status=SUBSCRIPTION_STATUS_PLANNED).delete()
-
-        if self.status == SUBSCRIPTION_STATUS_ACTIVE:
-            existing_active_subscriptions = Subscription.objects.filter(shop=self.shop,
-                                                                        status=SUBSCRIPTION_STATUS_ACTIVE)
-            for eas in existing_active_subscriptions:
-                eas.status = SUBSCRIPTION_STATUS_INACTIVE
-                eas.save()
-
-        super().save(*args, **kwargs)
-
-    def unused_proportion(self, date=None):
-        if date is None:
-            date = get_today()
-        days_total = (self.end_date - self.start_date).days  # Так правильно без учета заморозки,
-        #  поскольку на месяц имеет плавающее количество дней
-        days_left = (self.end_date - date).days
-        proportion = days_left / days_total
-        return proportion
-
-    def unused_price_by_date(self, date=None):
-        proportion = self.unused_proportion(date)
-        price = int(round(self.subscription_type.price * proportion, 0))
-        return price
-
-    @property
-    def unused_price(self):
-        return self.unused_price_by_date(get_today())
-
-    def set_end_date(self):
-        subscription_type = self.subscription_type
-        start_date = self.start_date
-        if subscription_type.period_type == SUBSCRIPTION_PERIOD_TYPE_DAY:
-            self.end_date = start_date + timezone.timedelta(days=subscription_type.days - 1)
-        elif subscription_type.period_type == SUBSCRIPTION_PERIOD_TYPE_MONTH:
-            self.end_date = start_date.replace(month=start_date.month + 1)
-        elif subscription_type.period_type == SUBSCRIPTION_PERIOD_TYPE_YEAR:
-            self.end_date = start_date.replace(year=start_date.year + 1)
 
 
 class AdminMonitorMail(models.Model):

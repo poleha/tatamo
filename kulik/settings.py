@@ -46,7 +46,7 @@ INSTALLED_APPS = (
 
     #'reversion',
     'polls',
-
+    'compressor',
 )
 
 
@@ -182,15 +182,15 @@ ACCOUNT_LOGOUT_ON_PASSWORD_CHANGE = False
 #
 STATICFILES_FINDERS = (
                         "django.contrib.staticfiles.finders.FileSystemFinder",
-                        "django.contrib.staticfiles.finders.AppDirectoriesFinder")
-"""
-CACHES = {
-    'default': {
-        'BACKEND': 'discount.backends.DiscountDBCacheBackend',
-        'LOCATION': 'cache_table',
-    }
-}
-"""
+                        "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+                        'compressor.finders.CompressorFinder',
+)
+
+
+
+
+
+
 
 
 
@@ -290,29 +290,25 @@ except:
     HOSTNAME = 'localhost'
 
 
-
-if HOSTNAME in ['localhost', 'ubuntu']:
-    DEBUG = True
-    TEMPLATE_DEBUG = True
-    DISCOUNT_CACHE_ENABLED = False
-
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-            'LOCATION': '/var/www/django_cache',
-        }
-    }
-else:
-    DEBUG = False
-    TEMPLATE_DEBUG = False
-    DISCOUNT_CACHE_ENABLED = True
-
     CACHES = {
         'default': {
             'BACKEND': 'discount.backends.DiscountMemcachedCacheCacheBackend',
             'LOCATION': '127.0.0.1:11211',
         }
     }
+
+
+if HOSTNAME in ['localhost', 'ubuntu']:
+    DEBUG = True
+    TEMPLATE_DEBUG = True
+    DISCOUNT_CACHE_ENABLED = False
+
+else:
+    DEBUG = False
+    TEMPLATE_DEBUG = False
+    DISCOUNT_CACHE_ENABLED = True
+
+
 
 DISCOUNT_FULL_PAGE_CACHE_DURATION = 60 * 60
 DISCOUNT_SAVE_PRODUCT_STAT = True
@@ -402,7 +398,7 @@ from datetime import date
 START_DATE = date(year=2015, month=8, day=1)
 
 
-SHOW_EMPTY_CATEGORIES = False
+SHOW_EMPTY_CATEGORIES = True
 SHOW_PREPARED_PRODUCTS = False
 from datetime import timedelta
 
@@ -429,3 +425,4 @@ djcelery.setup_loader()
 #START_DATE = date(year=2015, month=7, day=1)
 
 
+COMPRESS_ENABLED = True

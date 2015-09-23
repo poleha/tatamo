@@ -1,4 +1,4 @@
-
+{% load compress %}
 <ul class="inline-b menu-links">
 	<li class="menu-opener"><span class="menu-opener-inner"></span></li>
 	<ul class="inline-b main-menu">
@@ -37,7 +37,7 @@
 
 
 
-
+{% compress js %}
 	<script>
 		$(function() {
 			
@@ -86,3 +86,4 @@
 			
 
 	</script>
+{% endcompress %}

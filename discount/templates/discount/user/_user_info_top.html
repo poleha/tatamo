@@ -1,8 +1,4 @@
-
-
-
-
-    
+{% load compress %}
 {% if not request.user.is_anonymous %}
 {% load discount_tags %}
 
@@ -69,7 +65,7 @@
 
 
 
-
+{% compress js %}
 <script>
 $(function() {
      var blc = $("#login-block");
@@ -102,4 +98,4 @@ $(document).on('submit', '#login-form', function (event) {
 });
 
 </script>
-
+{% endcompress %}

@@ -1,3 +1,5 @@
+{% load compress %}
+{% compress js %}
 <script>
 
 $(function() {
@@ -81,3 +83,4 @@ productTypeSelector('#id_product_type','#id_category');
 });
 
 </script>
+{% endcompress %}

@@ -586,55 +586,6 @@ class ProductInlineActionBaseFormset(BaseInlineFormSet):
 
 
 
-class ProductActionForm(StatusScheme):
-    class Meta:
-        model = models.ProductAction
-        fields = ['action_type', 'start_date', 'end_date', 'banner', 'start']
-    #start = forms.BooleanField(required=False)
-
-    def get_essential_fields(self):
-        return ['start_date', 'end_date']
-
-    #banner = forms.ModelChoiceField(queryset=models.ProductBanner.objects.none())
-    def __init__(self, *args, instance=None, **kwargs):
-        super().__init__(*args, instance=instance, **kwargs)
-        #if instance and instance.pk and instance.status in [models.ACTION_STATUS_ACTIVE, models.ACTION_STATUS_PLANNED]:
-        #    self.fields['start'].initial = True
-
-
-    def disable_delete(self):
-        if hasattr(self.fields['action_type'], '_disabled'):
-            return self.fields['action_type']._disabled
-        else:
-            return False
-
-    def get_disabled_fields(self, *args, instance=None, **kwargs):
-        #today = get_today()
-        status = self.get_value('status')
-        disabled = list(self.base_fields.keys())
-        if not status == models.ACTION_STATUS_FINISHED:
-            disabled.remove('banner')
-        if status not in [models.ACTION_STATUS_ACTIVE, models.ACTION_STATUS_FINISHED, models.ACTION_STATUS_PAUSED]:
-            disabled = []
-
-        if instance and instance.pk and instance.status in [models.ACTION_STATUS_ACTIVE, models.ACTION_STATUS_PAUSED]:
-            disabled.remove('end_date')
-
-        if instance and instance.pk and instance.status == models.ACTION_STATUS_FINISHED and self.points_spent > 0:
-            pass
-
-        return disabled
-
-
-ProductActionFormset = inlineformset_factory(Product, models.ProductAction, form=ProductActionForm,
-                                         extra=3, exclude=[], formset=ProductInlineActionBaseFormset)
-
-
-#class ProductTypeItemMiniForm(forms.Form):
-#    product_type = forms.ModelChoiceField(queryset=ProductType.objects.filter(has_childs=False))
-
-
-
 
 
 
@@ -1224,45 +1175,16 @@ class ShopUserForm(ShopInlineBaseForm):
 
 
 class ShopUserBaseFormset(ShopInlineBaseFormset):
-    #Тут будем проверять, что пользователь указан в одной из форм. Если нет - добавляем.
-    #@property
-    #def current_user_present(self):
-    #    user_present = False
-    #    if self.forms:
-    #        for form in self.forms:
-    #            if form.initial_value('user') == self.user.username:
-    #                user_present = True
-    #                break
-    #    return user_present
-
-    #def set_current_user(self):
-    #    for form in self.forms:
-    #        if not form.initial_value('user'):
-    #            form.initial['user'] = self.user.username
-    #            form.initial['confirmed'] = True
-    #            break
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        #if user is not None:
-        #    self.user = user
-        #    if not self.is_bound and not self.current_user_present:
-        #        self.set_current_user()
-        #for form in self.forms:
-        #    if self.forms.index(form) > 0:
-        #        form.fields['user'].required = False
+
 
 
     def clean(self):
         super().clean()
 
         if hasattr(self, 'cleaned_data'):
-            #user_added = False
-            #for form_data in self.cleaned_data:
-            #    if form_data.get('user', None) == self.user and not form_data.get('DELETE', False):
-            #        user_added = True
-            #if not user_added:
-            #    raise ValidationError('У текущего пользователя нет прав на редактирование магазина')
 
             users = []
             for form_data in self.cleaned_data:
@@ -1280,17 +1202,8 @@ class ShopUserBaseFormset(ShopInlineBaseFormset):
 
 
 
-
-
-
-
-
-
 ShopUserFormset = inlineformset_factory(Shop, models.ShopsToUsers, form=ShopUserForm, min_num=1, validate_min=True,
                                          extra=2, exclude=[], formset=ShopUserBaseFormset)
-
-
-
 
 
 
@@ -1347,64 +1260,13 @@ class ShopForm(HashedFormMixin, SaveUserMixin, StatusScheme):
         return disabled
 
 
-    #def get_instance_status(self):
-    #    shop = self.instance
-    #    if shop is None or not shop.pk:
-    #        status = models.SHOP_STATUS_PROJECT
-    #    else:
-    #        status = shop.status
-    #    return status
 
-"""
-class ShopsToUsersConfirmForm(forms.ModelForm):
-    class Meta:
-        model = models.ShopsToUsers
-        exclude = ['confirmed']
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field_name in self.fields:
-            self.fields[field_name].widget = forms.HiddenInput()
-"""
 
 class BasePeriodForm(forms.Form):
     start_date = forms.DateField(label="Дата начала", widget=forms.DateInput(attrs={'class': 'date-input'}))
     end_date = forms.DateField(label="Дата окончания", widget=forms.DateInput(attrs={'class': 'date-input'}))
 
 
-class ActionDaysForm(BasePeriodForm):
-    category = forms.ModelChoiceField(queryset=models.ProductType.objects.filter(level=1), label='Категория', required=False)
-    action_type = forms.ChoiceField(choices=models.ACTION_TYPES, label='Вид акции')
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        today = get_today()
-        if not 'start_date' in self.initial:
-            self.initial['start_date'] = today
-        if not 'end_date' in self.initial:
-            self.initial['end_date'] = self.initial['start_date'] + timezone.timedelta(days=14)
-
-    def clean(self):
-        super().clean()
-
-        cleaned_data = self.cleaned_data
-        action_type = cleaned_data.get('action_type', None)
-        start_date = cleaned_data.get('start_date')
-        end_date = cleaned_data.get('end_date')
-        if start_date and end_date:
-            if (end_date - start_date).days > 100:
-                self.add_error('end_date', 'Пожалуйста, установите интервал не более 100 дней')
-
-
-        category = cleaned_data.get('category', None)
-        if int(action_type) == models.ACTION_TYPE_CATEGORY and category is None:
-            self.add_error('category', 'Обязательное поле')
-
-"""
-class ChangeSubscriptionForm(forms.Form):
-    subscription_type = forms.ModelChoiceField(queryset=models.SubscriptionType.objects.filter(available=True),
-                                               widget=forms.HiddenInput())
-"""
 
 
 class ProductChangerForm(StatusScheme):
@@ -1436,10 +1298,6 @@ class ProductChangerForm(StatusScheme):
             disabled = list(self.base_fields.keys())
 
         return disabled
-
-
-
-
 
 
 
@@ -1532,9 +1390,6 @@ ProductChangerConditionFormset = inlineformset_factory(models.ProductChanger, mo
 
 
 
-
-
-
 class AdmLoadProductsForm(forms.Form):
     file = forms.FileField(label='Файл')
     #user = forms.ModelChoiceField(queryset=models.User.objects.filter(~Q(shops=None)))
@@ -1546,8 +1401,6 @@ PRODUCT_ADMIN_FORM_STATUSES = (
     (models.STATUS_NEED_REWORK, 'На доработку'),
 
 )
-
-
 
 
 class ProductTatamoManagerApproveForm(forms.Form):

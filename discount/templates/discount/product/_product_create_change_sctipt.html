@@ -1,3 +1,5 @@
+{% load compress %}
+{% compress js %}
 <script>
 
 $(function() {
@@ -164,3 +166,4 @@ formset_hider("#related-actions", 'select', 'id_related_products-', '-related_pr
 });
 
 </script>
+{% endcompress %}

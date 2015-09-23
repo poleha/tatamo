@@ -172,8 +172,6 @@ def breadcrumbs(context):
     elif url_name == 'blocked-funds':
         breadcrumbs_list.append(Breadcrumb(title='Заблокированные средства', type='text'))
 
-    elif url_name == 'payment-history':
-        breadcrumbs_list.append(Breadcrumb(title='История взаиморасчетов', type='text'))
 
     elif url_name == 'action-days':
         breadcrumbs_list.append(Breadcrumb(title='График доступности размещения на главной', type='text'))
@@ -326,10 +324,6 @@ def shop_info(context):
 
 
 
-@register.inclusion_tag('discount/widgets/product_payments.html')
-def product_payments(product):
-    ts = models.Payment.objects.filter(product=product).order_by('period', 'action_type')
-    return {'payments': ts}
 
 
 
@@ -341,9 +335,6 @@ def get_main_top_menu(context):
     #active_menu_item = context.get('active_menu_item', None)
 
     return {'full_menu': full_menu}
-
-
-
 
 
 def get_user_top_menu_list(context):
@@ -373,19 +364,7 @@ def get_user_top_menu_list(context):
         item = MenuItem(title='Страница магазина: {0}'.format(shop.title), href=reverse('discount:shop-detail', kwargs={'pk': shop.pk }))
         full_menu_list.append(item)
 
-        item = MenuItem(title='Управление подпиской', href=reverse('discount:subscription-manage'))
-        full_menu_list.append(item)
-
         item = MenuItem(title='Акции магазина', href=reverse('discount:product-list-shop'))
-        full_menu_list.append(item)
-
-        item = MenuItem(title='График доступности размещения на главной', href=reverse('discount:action-days'))
-        full_menu_list.append(item)
-
-        item = MenuItem(title='Заблокированные средства', href=reverse('discount:blocked-funds'))
-        full_menu_list.append(item)
-
-        item = MenuItem(title='История взаиморасчетов', href=reverse('discount:payment-history'))
         full_menu_list.append(item)
 
         item = MenuItem(title='Добавить акцию', href=reverse('discount:product-create'))

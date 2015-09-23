@@ -1,3 +1,4 @@
+{% load compress %}
 {% if not voted %}
 <form method="post" id="poll-form" action="{{ submit_url }}">
 {{ poll.question }}
@@ -10,7 +11,7 @@
 <div id="poll-form-error"></div>
 
 {% if render_scripts %}
-
+{% compress js %}
 <script>
     $(function() {
     var frm = $('#poll-form');
@@ -31,6 +32,6 @@
     });
     });
 </script>
-
+{% endcompress %}
 {% endif %}
 {% endif %}

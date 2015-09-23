@@ -1,5 +1,4 @@
-
-
+{% load compress %}
 <div class="search-inner hidden popup">
 <form method="post" id="get-product-by-code-form" class="clearfix" action="{% url 'discount:get-product-by-code' %}">
     
@@ -17,7 +16,7 @@
 <div id="get-product-by-code-form-error"></div>
 
 </div>
-
+{% compress js %}
 <script>
 	
 	$(function() {
@@ -54,3 +53,4 @@
     });
     });
 </script>
+{% endcompress %}

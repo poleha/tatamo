@@ -14,12 +14,6 @@ class ProductImagesInline(admin.TabularInline):
     formset = ProductImageBaseFormset
 
 
-class ProductActionsInline(admin.TabularInline):
-    model = models.ProductAction
-    extra = 3
-    #formset = ProductImageBaseFormset
-
-
 class ProductBannersInline(admin.TabularInline):
     model = models.ProductBanner
     extra = 3
@@ -51,7 +45,7 @@ class ProductAdmin(admin.ModelAdmin):
              'all': ('discount/css/admin/product.css',)
         }
     readonly_fields = ('created', 'edited', 'hashed')
-    inlines = (ProductImagesInline, ProductConditionInline, ProductActionsInline, ProductBannersInline)
+    inlines = (ProductImagesInline, ProductConditionInline, ProductBannersInline)
     list_filter = ['status', 'shop', 'brand', 'filter_values', 'product_type', 'ad']
     search_fields = ['title']
     form = ProductAdminForm
@@ -151,10 +145,6 @@ class ShopPhonesInline(admin.TabularInline):
     extra = 5
 
 
-class ShopSubscriptionsInline(admin.TabularInline):
-    model = models.Subscription
-    exclude = ()
-    extra = 5
 
 
 class ProductBannerAdmin(admin.ModelAdmin):
@@ -194,14 +184,13 @@ class AddBrandsListFilter(admin.SimpleListFilter):
             return queryset.filter(~Q(add_brands__regex=r'^(?!\s*$).+'))
 
 
-
-
-
 class ShopAdmin(admin.ModelAdmin):
     model = models.Shop
-    inlines = [ShopUsersInline, ShopBrandsInline, ShopPhonesInline, ShopSubscriptionsInline]
+    inlines = [ShopUsersInline, ShopBrandsInline, ShopPhonesInline]
     list_filter = ['status', AddBrandsListFilter]
     search_fields = ['title']
+
+
 
 
 
@@ -213,16 +202,6 @@ class ProductToCart(admin.TabularInline):
     exclude = ()
     extra = 5
 
-
-class SubscriptionAdmin(admin.ModelAdmin):
-    model = models.Subscription
-    list_filter = ['shop', 'status']
-
-
-
-class PaymentAdmin(admin.ModelAdmin):
-    model = models.Payment
-    list_filter = ['created', 'operation', 'shop']
 
 class ModelHistoryAdmin(admin.ModelAdmin):
     model = models.ModelHistory
@@ -244,7 +223,7 @@ class CartAdmin(admin.ModelAdmin):
 
 #admin.site.register(models.Product, ProductAdmin)
 admin.site.register(models.ProductType, ProductTypeAdmin)
-admin.site.register(models.Shop, ShopAdmin)
+
 admin.site.register(models.Comment)
 admin.site.register(models.ShopType)
 admin.site.register(models.Brand)
@@ -258,12 +237,12 @@ admin.site.register(models.ProductImage, ProductImageAdmin)
 #admin.site.register(models.History)
 #admin.site.register(models.ProductHistory)
 admin.site.register(models.ModelHistory, ModelHistoryAdmin)
-admin.site.register(models.Payment, PaymentAdmin)
+
 #admin.site.register(models.ShopAccount)
 #admin.site.register(models.ProductAccount)
-admin.site.register(models.SubscriptionType)
-admin.site.register(models.Subscription, SubscriptionAdmin)
-admin.site.register(models.ProductAction)
+
+admin.site.register(models.Shop, ShopAdmin)
+
 admin.site.register(models.ProductBanner, ProductBannerAdmin)
 admin.site.register(models.ProductChanger, ProductChangerAdmin)
 admin.site.register(models.FilterValueToProductType)

@@ -1,7 +1,7 @@
 {% load staticfiles %}
+{% load compress %}
 
 
-<script src="{% static "discount/js/flexslider/jquery.flexslider-min.js"  %}"></script>
 <link href="{% static "discount/js/flexslider/flexslider.css" %}" rel="stylesheet">
 
 
@@ -25,8 +25,8 @@
 
 
 
-
-
+{% compress js %}
+<script src="{% static "discount/js/flexslider/jquery.flexslider-min.js"  %}"></script>
 <script>
 $(function() {
   // The slider being synced must be initialized first
@@ -53,7 +53,7 @@ $(function() {
   });
 });
 </script>
-
+{% endcompress %}
 
 <style>
 #carousel {

@@ -1,6 +1,12 @@
 {% if not is_ajax %}
 <div class="get-code">
 {% endif %}
+{% if product.no_code_required %}
+<div>
+Для получения скидки по этой акции промокод не требуется
+</div>
+
+{% else %}
 <div id="dialog-form">
 {% if status_text %}
 {{ status_text }}
@@ -34,6 +40,7 @@
 
 {% endif %}
 </div>
+{% endif %}
 
 {% if not is_ajax %}
 </div>

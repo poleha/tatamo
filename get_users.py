@@ -12,7 +12,6 @@ if __name__ == "__main__":
     execute_from_command_line(sys.argv)
 
 from django.core.cache import cache
-from discount.models import Payment, Shop, Product, User, ProductMail, ModelHistory, ProductType
 from discount import models
 from discount import tasks
 from collections import OrderedDict
@@ -24,7 +23,7 @@ shops = models.Shop.objects.filter(status=models.SHOP_STATUS_PUBLISHED)
 res = []
 
 for shop in shops:
-    products_count = shop.products.filter(status=models.STATUS_PUBLISHED, end_date__lte=date(day=31, year=2015, month=8)).count()
+    products_count = shop.products.filter(status=models.STATUS_SUSPENDED).count()
     if products_count > 0:
         for user in shop.users.all():
             res.append((user.email, user.profile.phone, user.first_name, products_count))

@@ -1,5 +1,6 @@
 {% load discount_tags %}
 {% load contact_form_tags %}
+{% load compress %}
 
 <html>
 
@@ -137,7 +138,7 @@
 
         {% main_social_links %}
 
-
+{% compress js %}
 
         <script>
             $('form.confirm').click(function (caller) {
@@ -148,6 +149,7 @@
                 }
             });
         </script>
+         {% endcompress %}
         {% include 'discount/widgets/_cart_add_product_script.html' %}
 
         <link rel="stylesheet" href="//code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css">

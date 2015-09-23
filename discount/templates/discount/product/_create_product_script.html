@@ -1,3 +1,5 @@
+{% load compress %}
+{% compress js %}
 <script type="text/javascript">
 
 
@@ -267,6 +269,25 @@
         });
 
 
+
+        $('#id_no_code_required').change(function(e){
+        if ($('#id_no_code_required').prop('checked') == true){
+        $('#full-code-block').addClass('hidden');
+        $('#id_use_simple_code').prop('checked', false);
+        $('#id_use_code_postfix').prop('checked', true);
+        $('#id_use_simple_code').trigger('change');
+
+
+        }
+            else{
+        $('#full-code-block').removeClass('hidden');
+
+
+        }
+
+        });
+
+
     });
 
 
@@ -274,3 +295,4 @@
 
 
 </script>
+{% endcompress %}

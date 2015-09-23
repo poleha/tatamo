@@ -125,6 +125,15 @@
 		{{ form.brand.errors }}
 	</div>
 
+    <div class="item">
+    {{ form.no_code_required.label_tag }}
+		<div class="field inline-b  wrapper">
+    {{ form.no_code_required }}
+	{{ form.no_code_required.errors }}
+
+    </div>
+        <div id="full-code-block">
+
     {% if not form.instance.use_simple_code %}
     <div class="item" id="code-block">
 
@@ -142,7 +151,6 @@
 	<input type="button" value="Сгенерировать код заново" id="generate-product-code-button">
 	{% endif %}
 		</div></div>
-
 
 
 
@@ -172,15 +180,9 @@
 		<div class="field inline-b  wrapper">
     {{ form.simple_code }}
 	{{ form.simple_code.errors }}
-
-
-
 		</div></div>
 
-
-
-
-
+</div>
         <div class="item">
     {{ form.link.label_tag }}
 		<div class="field inline-b  wrapper">
