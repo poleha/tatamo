@@ -12,7 +12,7 @@ if __name__ == "__main__":
     execute_from_command_line(sys.argv)
 
 from django.core.cache import cache
-from discount.models import Payment, Shop, Product, User, ProductMail, ModelHistory, ProductType
+from discount.models import Shop, Product, User, ProductMail, ModelHistory, ProductType
 from discount import models
 from discount import tasks
 from collections import OrderedDict
@@ -463,32 +463,48 @@ for p in ps:
     except models.ValidationError as e:
         print(e)
 """
+from django.core import serializers
+dates = {}
 
-end_date = timezone.datetime(day=15, year=2015, month=9)
-#start_date = timezone.datetime(day=15, year=2015, month=8)
-ps = models.Product.objects.filter(shop_id__in=[64, 26, 66, 83, 27, 82], status=models.STATUS_PUBLISHED, end_date__lt=end_date)
+#dates[28] = timezone.datetime(day=31, year=2015, month=10)
+#dates[16] = timezone.datetime(day=31, year=2015, month=12)
+dates[87] = timezone.datetime(day=1, year=2015, month=11)
+dates[29] = timezone.datetime(day=31, year=2015, month=10)
+
+
+
+
+#start_date = timezone.datetime(day=23, year=2015, month=9)
+ps = models.Product.objects.filter(shop_id__in=dates.keys(), status=models.STATUS_SUSPENDED)
 count = ps.count()
 
 
 for p in ps:
     #p.start_date = start_date
-    p.end_date = end_date
+    p.end_date = dates[p.shop.pk]
+
     #p.use_code_postfix = False
     #start = timezone.datetime(day=1, year=2015, month=8).date()
     #p.start_after_approve = True
-    #p.status = models.STATUS_APPROVED
+    p.status = models.STATUS_PUBLISHED
     #if p.start_date < start:
     #    print(p.get_absolute_url(), p.start_date, p.end_date)
     #    p.start_date = start
+    #if p.shop_id == 59:
+    #    h = models.ModelHistory.objects.filter(cls='Product', key=p.pk).earliest('created')
+    #    v = list(serializers.deserialize('json', h.serialized))[0]
+    #    stock_price = p.stock_price
+    #    p.stock_price = v.object.stock_price
+    #    print(stock_price, p.stock_price)
 
     try:
         p.save()
+
         #p = p.saved_version
         count -= 1
         print(p.shop, 'left', count, p.status_text)
     except models.ValidationError as e:
         print(e)
-
 
 
 

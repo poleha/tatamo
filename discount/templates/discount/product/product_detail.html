@@ -117,6 +117,7 @@
                              {% if manage_url %}
 
 							<div class="white"><a class="button" href="{{ manage_url }}">Редактировать</a></div>
+                            <div class="white"><a class="button" href="{{ product.get_banners_url }}">Управление баннерами</a></div>
                             {% if product.status in changer_statuses %}
 
 							<div class="white"><a class="button" href="{% url 'discount:product-change' product.pk %}">Создать заявку на изменение</a></div>

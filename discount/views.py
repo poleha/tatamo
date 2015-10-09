@@ -743,7 +743,7 @@ class MainPage(generic.TemplateView):
 
 
 
-            additional_products = models.Product.objects.get_available_products().exclude(productbanner__banner=None)
+            additional_products = models.Product.objects.get_available_products().filter(productbanner__status=models.BANNER_STATUS_APPROVED)
             additional_products = filter_popular_products(additional_products, max_count)
 
             favourites = []

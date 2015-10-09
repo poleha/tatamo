@@ -12,7 +12,6 @@ from django.core.cache import cache
 # from markitup.fields import MarkupField
 from django.forms import ValidationError
 from django.conf import settings
-from django.db.models.signals import post_save, pre_save
 import datetime
 from collections import OrderedDict
 from django.db.models import Sum, Max
@@ -29,8 +28,8 @@ from django.core.exceptions import NON_FIELD_ERRORS
 from random import shuffle
 import hashlib
 from contact_form.models import ContactForm, STATUS_CREATED
-from django.db.models.signals import post_save, m2m_changed
-
+from django.db.models.signals import post_save, m2m_changed, pre_save
+import random
 
 class ErrorDict():
     def __init__(self):
@@ -1342,6 +1341,14 @@ class Product(TatamoModelMixin, ProductVersionMixin, AbstractHashMixin, Abstract
     def product_conditions(self):
         general_conditions = settings.GENERAL_CONDITIONS
         conditions = self.conditions.all().values_list('condition', flat=True)
+        if not self.no_code_required:
+            additional_conditions = [
+                'Скидка предоставляется только на конкретную модель, указанную в купоне.',
+                'Цены в магазине указаны без учета скидки, с помощью промокода у Вас есть возможность получить скидку.',
+                'Скидка по купону не суммируется с другими спрецпредложениями магазина.',
+                'Промокод не гарантирует наличия товара в магазине, предложение ограничено.',
+            ]
+            general_conditions += additional_conditions
         return list(conditions) + general_conditions
 
     @property
@@ -1358,18 +1365,12 @@ class Product(TatamoModelMixin, ProductVersionMixin, AbstractHashMixin, Abstract
 
     @property
     def banner(self):
-        if not self.ad:
-            try:
-                action = self.actions.get(status=ACTION_STATUS_ACTIVE, action_type=ACTION_TYPE_POPULAR)
-                banner = action.banner.banner
-            except:
-                banner = None
-        else:
-            try:
-                banner = self.productbanner_set.filter(status=BANNER_STATUS_APPROVED).latest('created').banner
-            except:
-                banner = None
-
+        try:
+            banners = list(self.productbanner_set.filter(status=BANNER_STATUS_APPROVED))
+            random.shuffle(banners)
+            banner = banners[0].banner
+        except:
+            banner = None
         return banner
 
 
@@ -1493,6 +1494,9 @@ class Product(TatamoModelMixin, ProductVersionMixin, AbstractHashMixin, Abstract
 
     def get_coupon_url(self):
         return reverse('discount:coupon-view', kwargs={'pk': self.pk})
+
+    def get_banners_url(self):
+        return reverse('discount:product-banners', kwargs={'pk': self.pk})
 
     def get_coupon_qr_url(self, user):
         ptc = self.find_ptc_by_user(user)
@@ -1642,7 +1646,7 @@ class Product(TatamoModelMixin, ProductVersionMixin, AbstractHashMixin, Abstract
             if self.start_date and self.start_date > today:
                errors.append('start_date', 'Дата начала действующей акции не должна быть в будующем.')
 
-            if not old_instance.status == STATUS_PUBLISHED: #Публикация
+            if not old_instance.status in [STATUS_PUBLISHED, STATUS_SUSPENDED]: #Публикация
                 if self.start_date < today:
                     errors.append('start_date', 'Акция не может начаться раньше, чем сегодня')
 
@@ -1868,7 +1872,8 @@ def start_or_plan_approved_action(sender, instance, created, **kwargs):
             if instance.start_date > today:
                 instance.status = STATUS_READY
                 instance.save()
-            elif instance.start_date == today:
+            elif instance.start_date <= today:
+                instance.start_date = today
                 instance.status = STATUS_PUBLISHED
                 instance.save()
         except:

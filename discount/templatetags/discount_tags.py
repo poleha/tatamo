@@ -191,8 +191,8 @@ def metatags(context):
 
     metatags_dict = {}
     metatags_dict['title'] = 'Tatamo - территория скидок'
-    metatags_dict['keywords'] = 'Tatamo - территория скидок'
-    metatags_dict['description'] = 'Tatamo - территория скидок'
+    metatags_dict['keywords'] = 'скидки, акции, купоны, товары со скидкой'
+    metatags_dict['description'] = 'Tatamo - территория скидок. На нашем сайте вы найдете уникальные предложения магазинов на товары со скидкой.'
 
     if url_name == 'main-page':
         pass
@@ -200,15 +200,15 @@ def metatags(context):
     elif url_name == 'product-detail':
         product = context.get('product')
         metatags_dict['title'] = 'Tatamo - территория скидок | {0}'.format(product.__str__())
-        metatags_dict['keywords'] = 'Tatamo - территория скидок | {0}'.format(product.__str__())
-        metatags_dict['description'] = 'Tatamo - территория скидок | {0}'.format(product.__str__())
+        metatags_dict['keywords'] += ', {0}'.format(product.__str__())
+        metatags_dict['description']  += '. {0}'.format(product.__str__())
 
     elif url_name == 'product-list':
         category = context.get('category', None)
         if category:
             metatags_dict['title'] = 'Tatamo - территория скидок | {0}'.format(category.title)
-            metatags_dict['keywords'] = 'Tatamo - территория скидок | {0}'.format(category.title)
-            metatags_dict['description'] = 'Tatamo - территория скидок | {0}'.format(category.title)
+            metatags_dict['keywords'] += ', {0}'.format(category.title)
+        metatags_dict['description'] += ' {0}'.format(category.title)
 
     elif url_name in ['cart-view', 'cart-pdf-view', 'cart-html-view']:
         metatags_dict['title'] = 'Tatamo - территория скидок | Корзина'
@@ -222,14 +222,13 @@ def metatags(context):
 
     elif url_name == 'shop-list':
         metatags_dict['title'] = 'Tatamo - территория скидок | Магазины'
-        metatags_dict['keywords'] = 'Tatamo - территория скидок | Магазины'
-        metatags_dict['description'] = 'Tatamo - территория скидок | Магазины'
+        metatags_dict['description'] += '| Магазины'
 
     elif url_name == 'shop-detail':
         shop = context.get('shop')
         metatags_dict['title'] = 'Tatamo - территория скидок | {0}'.format(shop.title)
-        metatags_dict['keywords'] = 'Tatamo - территория скидок | {0}'.format(shop.title)
-        metatags_dict['description'] = 'Tatamo - территория скидок | {0}'.format(shop.title)
+        metatags_dict['keywords'] += ', {0}'.format(shop.title)
+        metatags_dict['description'] += ' {0}'.format(shop.title)
 
     elif url_name == 'product-create':
         metatags_dict['title'] = 'Tatamo - территория скидок | Создание акции'
