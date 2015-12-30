@@ -468,8 +468,8 @@ dates = {}
 
 #dates[28] = timezone.datetime(day=31, year=2015, month=10)
 #dates[16] = timezone.datetime(day=31, year=2015, month=12)
-dates[87] = timezone.datetime(day=1, year=2015, month=11)
-dates[29] = timezone.datetime(day=31, year=2015, month=10)
+dates[23] = timezone.datetime(day=15, year=2016, month=5)
+
 
 
 
@@ -506,6 +506,13 @@ for p in ps:
     except models.ValidationError as e:
         print(e)
 
+
+product = Product.objects.create(title='       Test        ', body='Test', normal_price=500, stock_price=250,
+                                     start_date=self.today,
+                                     end_date=self.today + timezone.timedelta(days=5),
+                                     code=models.Product.generate_unique_code(), product_type=self.pt3, shop=self.shop, brand=self.brand,
+                                     )
+print(p.product_conditions)
 
 
 

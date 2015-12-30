@@ -1340,7 +1340,7 @@ class Product(TatamoModelMixin, ProductVersionMixin, AbstractHashMixin, Abstract
     @property
     def product_conditions(self):
         general_conditions = settings.GENERAL_CONDITIONS
-        conditions = self.conditions.all().values_list('condition', flat=True)
+        conditions = list(self.conditions.all().values_list('condition', flat=True)) + general_conditions
         if not self.no_code_required:
             additional_conditions = [
                 'Скидка предоставляется только на конкретную модель, указанную в купоне.',
@@ -1348,8 +1348,8 @@ class Product(TatamoModelMixin, ProductVersionMixin, AbstractHashMixin, Abstract
                 'Скидка по купону не суммируется с другими спрецпредложениями магазина.',
                 'Промокод не гарантирует наличия товара в магазине, предложение ограничено.',
             ]
-            general_conditions += additional_conditions
-        return list(conditions) + general_conditions
+            conditions += additional_conditions
+        return conditions
 
     @property
     def fieds_to_hash(self):
